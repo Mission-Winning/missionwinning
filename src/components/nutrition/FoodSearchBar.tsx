@@ -1,0 +1,138 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Input } from '@/components/ui/input';
+import type { FoodSearchItem } from '@/lib/foodSearch';
+
+type Props = {
+  onSelect: (item: FoodSearchItem) => void;
+  /** Prefill search (e.g. from a rough NL estimate). */
+  initialQuery?: string;
+  /** Hide Open Food Facts credit line for compact embeds. */
+  compact?: boolean;
+};
+
+export function FoodSearchBar({ onSelect, initialQuery = '', compact = false }: Props) {
+  const { t } = useTranslation();
+  const [query, setQuery] = useState(initialQuery);
+  const [items, setItems] = useState<FoodSearchItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (initialQuery.trim()) setQuery(initialQuery);
+  }, [initialQuery]);
+
+  const search = useCallback(async (q: string) => {
+    if (q.trim().length < 2) {
+      setItems([]);
+      setError('');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/fuel/search-food?q=${encodeURIComponent(q.trim())}`);
+      const data = (await res.json()) as { items?: FoodSearchItem[]; error?: string };
+      if (!res.ok) {
+        setItems([]);
+        setError(
+          t('fuelSearchUnavailable', {
+            defaultValue: 'Food search temporarily unavailable. Use quick-add or manual log.',
+          })
+        );
+        return;
+      }
+      setItems(data.items ?? []);
+      if ((data.items?.length ?? 0) === 0) {
+        setError(t('fuelSearchEmpty', { defaultValue: 'No matches — try a simpler name.' }));
+      }
+    } catch {
+      setItems([]);
+      setError(
+        typeof navigator !== 'undefined' && !navigator.onLine
+          ? t('fuelSearchOffline', {
+              defaultValue: 'You appear offline — try again when connected.',
+            })
+          : t('fuelSearchUnavailable', { defaultValue: 'Food search temporarily unavailable.' })
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => search(query), 400);
+    return () => clearTimeout(timer);
+  }, [query, search]);
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' || items.length === 0) return;
+            e.preventDefault();
+            const first = items[0];
+            onSelect(first);
+            setQuery('');
+            setItems([]);
+          }}
+          placeholder={t('fuelSearchPlaceholder', {
+            defaultValue: 'Search foods (global database)…',
+          })}
+          className="pl-9"
+          autoComplete="off"
+        />
+      </div>
+      {loading && (
+        <p className="text-xs text-muted-foreground">
+          {t('fuelSearchLoading', { defaultValue: 'Searching…' })}
+        </p>
+      )}
+      {error && !loading && (
+        <p className="text-xs text-muted-foreground" role="status">
+          {error}
+        </p>
+      )}
+      {items.length > 0 && (
+        <ul className="border-2 border-border divide-y divide-border overflow-hidden max-h-56 overflow-y-auto">
+          {items.map((item, idx) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                className={`w-full text-left px-3 py-2.5 hover:bg-muted transition-colors min-h-[44px] tap-target ${
+                  idx === 0 ? 'bg-muted' : ''
+                }`}
+                onClick={() => {
+                  onSelect(item);
+                  setQuery('');
+                  setItems([]);
+                }}
+              >
+                <p className="text-sm font-medium truncate">{item.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {item.brand ? `${item.brand} · ` : ''}
+                  {item.protein}g P · {item.calories} kcal
+                  {item.servingLabel ? ` · ${item.servingLabel}` : ''}
+                </p>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!compact ? (
+        <p className="text-[10px] text-muted-foreground">
+          {t('fuelSearchCredit', {
+            defaultValue: 'Powered by Open Food Facts — community database, edit portions after adding.',
+          })}
+        </p>
+      ) : null}
+    </div>
+  );
+}

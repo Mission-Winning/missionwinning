@@ -1,0 +1,22 @@
+{
+  "betaFootWedge": "Train anywhere: log from Today offline — no account required. After your first log, open Mission Coach for a week that adapts from sessions alone.",
+  "betaFootWedgeNoSw": "Train anywhere: log from Today with no account required. Lose signal mid-session and logging keeps going — it syncs when you are back. After your first log, open Mission Coach for a week that adapts from sessions alone.",
+  "betaStep1Title": "액세스 잠금 해제",
+  "betaStep1Body": "초대에 있는 비공개 액세스 코드를 사용하세요. 게이트 페이지에 입력하거나 URL에 ?access=YOUR_CODE를 한 번 추가하세요.",
+  "betaStep1Cta": "액세스 코드를 입력하세요",
+  "betaStep2Title": "I-Day 완료(약 2분)",
+  "betaStep2Body": "환영 흐름은 목표와 장비를 설정합니다. 로그인하면 프로필과 동기화됩니다.",
+  "betaStep2Cta": "I-Day를 시작하세요",
+  "betaStep3Title": "첫 번째 운동을 기록하세요",
+  "betaStep3Body": "오늘 → 다음 단계 → 훈련. 하나의 세션이 완료되면 연속 추적 및 순위표 동기화가 잠금 해제됩니다.",
+  "betaStep3Cta": "오늘로 이동",
+  "betaStep4Title": "로그인(선택사항이지만 권장됨)",
+  "betaStep4Body": "프로필의 매직 링크는 여러 장치의 클라우드에 여행, 운동, 순위를 유지합니다.",
+  "betaStep4Cta": "프로필 및 로그인",
+  "betaStep5Title": "순위 살펴보기",
+  "betaStep5Body": "야간 및 이른 아침 코호트를 포함한 6개의 보드. 친구와 비교할 분대 코드를 설정하세요.",
+  "betaStep5Cta": "리더보드 열기",
+  "betaNeedLi1": "이번 주에 I-Day를 완료하고 최소 한 번의 운동을 완료하세요.",
+  "betaNeedLi2": "오늘의 여정 단계를 시도해 보세요. 진행하면서 대시보드가 ​​잠금 해제됩니다.",
+  "betaNeedLi3": "프로필 → 피드백을 통해 혼란스러운 내용을 신고하거나 초대 이메일에 회신하세요."
+}

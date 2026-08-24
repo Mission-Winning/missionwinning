@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none" role="img" aria-label="Jump squat: load, explode, land">
+  <title>Jump squat form diagram</title>
+  <rect width="360" height="220" fill="#f3f2f2"></rect>
+  <text x="60" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">LOAD</text>
+  <text x="180" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">EXPLODE</text>
+  <text x="300" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">LAND</text>
+  <line x1="20" y1="185" x2="100" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="140" y1="185" x2="220" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="260" y1="185" x2="340" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="63" cy="79" r="9"></circle>
+    <line x1="63" y1="79" x2="63" y2="93"></line>
+    <line x1="63" y1="93" x2="60" y2="146.5"></line>
+    <line x1="63" y1="93" x2="61" y2="97"></line>
+    <line x1="61" y1="97" x2="78" y2="103"></line>
+    <line x1="78" y1="103" x2="96" y2="101"></line>
+    <line x1="61" y1="97" x2="82" y2="109"></line>
+    <line x1="82" y1="109" x2="100" y2="107"></line>
+    <line x1="60" y1="146.5" x2="44.5" y2="154"></line>
+    <line x1="44.5" y1="154" x2="39.5" y2="185"></line>
+    <line x1="60" y1="146.5" x2="78.5" y2="156"></line>
+    <line x1="78.5" y1="156" x2="84" y2="185"></line>
+  </g>
+  <circle cx="60" cy="145" r="3.5" fill="#ec3013"></circle>
+  <text x="60" y="137" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">load</text>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="180" cy="55" r="9"></circle>
+    <line x1="180" y1="55" x2="180" y2="69"></line>
+    <line x1="180" y1="69" x2="180" y2="118"></line>
+    <line x1="180" y1="69" x2="178" y2="73"></line>
+    <line x1="178" y1="73" x2="170" y2="47"></line>
+    <line x1="170" y1="47" x2="172" y2="27"></line>
+    <line x1="178" y1="73" x2="190" y2="47"></line>
+    <line x1="190" y1="47" x2="188" y2="27"></line>
+    <line x1="180" y1="118" x2="172" y2="145"></line>
+    <line x1="172" y1="145" x2="166" y2="148"></line>
+    <line x1="180" y1="118" x2="194" y2="147"></line>
+    <line x1="194" y1="147" x2="196" y2="148"></line>
+  </g>
+  <path d="M180 170 L180 140" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon points="180,140 184,148 176,148" fill="#ec3013"></polygon>
+  <text x="190" y="155" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="9">up</text>
+  <line x1="152" y1="178" x2="208" y2="178" stroke="#201e1d" stroke-width="1.5" stroke-dasharray="4 3"></line>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="302" cy="71" r="9"></circle>
+    <line x1="302" y1="71" x2="302" y2="85"></line>
+    <line x1="302" y1="85" x2="300" y2="137"></line>
+    <line x1="302" y1="85" x2="300" y2="89"></line>
+    <line x1="300" y1="89" x2="318" y2="95"></line>
+    <line x1="318" y1="95" x2="336" y2="93"></line>
+    <line x1="300" y1="89" x2="322" y2="101"></line>
+    <line x1="322" y1="101" x2="340" y2="99"></line>
+    <line x1="300" y1="137" x2="287" y2="151"></line>
+    <line x1="287" y1="151" x2="281" y2="185"></line>
+    <line x1="300" y1="137" x2="317" y2="153"></line>
+    <line x1="317" y1="153" x2="322" y2="185"></line>
+  </g>
+  <circle cx="300" cy="185" r="3.5" fill="#ec3013"></circle>
+  <text x="300" y="177" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">soft</text>
+</svg>

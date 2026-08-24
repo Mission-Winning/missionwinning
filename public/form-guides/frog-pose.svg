@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none" role="img" aria-label="Frog pose: wide, settle, hold">
+  <title>Frog pose form diagram</title>
+  <rect width="360" height="220" fill="#f3f2f2"></rect>
+  <text x="60" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">WIDE</text>
+  <text x="180" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">SETTLE</text>
+  <text x="300" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">HOLD</text>
+  <line x1="20" y1="185" x2="100" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="140" y1="185" x2="220" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="260" y1="185" x2="340" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="60" cy="100" r="9"></circle>
+    <line x1="60" y1="100" x2="60" y2="114"></line>
+    <line x1="60" y1="114" x2="60" y2="148"></line>
+    <line x1="60" y1="114" x2="46" y2="118"></line>
+    <line x1="60" y1="114" x2="74" y2="118"></line>
+    <line x1="46" y1="118" x2="40" y2="142"></line>
+    <line x1="40" y1="142" x2="36" y2="158"></line>
+    <line x1="74" y1="118" x2="80" y2="142"></line>
+    <line x1="80" y1="142" x2="84" y2="158"></line>
+    <line x1="60" y1="148" x2="18" y2="162"></line>
+    <line x1="18" y1="162" x2="12" y2="185"></line>
+    <line x1="60" y1="148" x2="102" y2="162"></line>
+    <line x1="102" y1="162" x2="108" y2="185"></line>
+  </g>
+  <circle cx="18" cy="162" r="3.5" fill="#ec3013"></circle>
+  <text x="18" y="154" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">knees</text>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="180" cy="110" r="9"></circle>
+    <line x1="180" y1="110" x2="180" y2="124"></line>
+    <line x1="180" y1="124" x2="180" y2="152"></line>
+    <line x1="180" y1="124" x2="166" y2="128"></line>
+    <line x1="180" y1="124" x2="194" y2="128"></line>
+    <line x1="166" y1="128" x2="162" y2="150"></line>
+    <line x1="162" y1="150" x2="158" y2="162"></line>
+    <line x1="194" y1="128" x2="198" y2="150"></line>
+    <line x1="198" y1="150" x2="202" y2="162"></line>
+    <line x1="180" y1="152" x2="132" y2="164"></line>
+    <line x1="132" y1="164" x2="128" y2="185"></line>
+    <line x1="180" y1="152" x2="228" y2="164"></line>
+    <line x1="228" y1="164" x2="232" y2="185"></line>
+  </g>
+  <path d="M180 128 L180 148" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon points="180,148 176,140 184,140" fill="#ec3013"></polygon>
+  <text x="190" y="138" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="9">hips</text>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="300" cy="110" r="9"></circle>
+    <line x1="300" y1="110" x2="300" y2="124"></line>
+    <line x1="300" y1="124" x2="300" y2="152"></line>
+    <line x1="300" y1="124" x2="286" y2="128"></line>
+    <line x1="300" y1="124" x2="314" y2="128"></line>
+    <line x1="286" y1="128" x2="282" y2="150"></line>
+    <line x1="282" y1="150" x2="278" y2="162"></line>
+    <line x1="314" y1="128" x2="318" y2="150"></line>
+    <line x1="318" y1="150" x2="322" y2="162"></line>
+    <line x1="300" y1="152" x2="252" y2="164"></line>
+    <line x1="252" y1="164" x2="248" y2="185"></line>
+    <line x1="300" y1="152" x2="348" y2="164"></line>
+    <line x1="348" y1="164" x2="352" y2="185"></line>
+  </g>
+  <circle cx="300" cy="152" r="3.5" fill="#ec3013"></circle>
+  <text x="300" y="144" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">breathe</text>
+</svg>

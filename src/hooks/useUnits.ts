@@ -1,0 +1,42 @@
+'use client';
+/**
+ * Metric/imperial preference from localStorage.
+ * Consumers: workout logger, calculators
+ */
+
+import { useEffect, useState } from 'react';
+import {
+  type UnitsPref,
+  weightUnitLabel,
+  weightStep,
+  heightUnitLabel,
+  bodyweightUnitLabel,
+} from '@/lib/units';
+import { readRaw } from '@/lib/storage/safeStorage';
+import { STORAGE_KEYS } from '@/lib/storage/keys';
+
+export type { UnitsPref };
+
+function readUnitsPref(): UnitsPref {
+  if (typeof window === 'undefined') return 'metric';
+  const saved = readRaw(STORAGE_KEYS.units) as UnitsPref | null;
+  return saved === 'imperial' ? 'imperial' : 'metric';
+}
+
+export function useUnits(): UnitsPref {
+  const [units, setUnits] = useState<UnitsPref>(readUnitsPref);
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'mw_units' && (e.newValue === 'metric' || e.newValue === 'imperial')) {
+        setUnits(e.newValue);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  return units;
+}
+
+export { weightUnitLabel, weightStep, heightUnitLabel, bodyweightUnitLabel };

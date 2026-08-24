@@ -1,0 +1,60 @@
+# Manual production deploy — the FALLBACK path.
+#
+# Primary path is the Vercel Deploy Hook driven by a GitHub webhook (see
+# docs/VERCEL_DEPLOY_CHECKLIST.md §1.1). Webhooks are not Actions: they are unmetered
+# and keep working when the Actions account is blocked, which is the failure this repo
+# actually hits.
+#
+# The `push: master` trigger was removed deliberately, for two reasons:
+#   1. With the hook wired, a push trigger means two concurrent production builds.
+#   2. While Actions is blocked, every push produced a red run and a failure email —
+#      noise that hides real failures.
+#
+# Run this by hand when the hook is unavailable: Actions → Deploy production → Run workflow.
+#
+# Required GitHub Actions secrets:
+#   VERCEL_TOKEN — https://vercel.com/account/tokens (or CLI auth token)
+#   VERCEL_ORG_ID — GitHub secret (team_…); never commit the real value
+#   VERCEL_PROJECT_ID — GitHub secret (prj_…); never commit the real value
+#
+# Builds on Vercel (not locally) so Production Sensitive env vars are available.
+name: Deploy production
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Founder: create GH Environment "production" with required reviewers when repo is Public.
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Vercel production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ] || [ -z "$VERCEL_ORG_ID" ]; then
+            echo "Missing VERCEL_TOKEN / VERCEL_PROJECT_ID / VERCEL_ORG_ID in GitHub Secrets"
+            exit 1
+          fi
+          mkdir -p .vercel
+          printf '%s\n' "{\"projectId\":\"$VERCEL_PROJECT_ID\",\"orgId\":\"$VERCEL_ORG_ID\",\"projectName\":\"missionwinning\"}" > .vercel/project.json
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN"

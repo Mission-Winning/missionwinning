@@ -1,0 +1,302 @@
+# Mission Journey — Simple UI + Member Path (Pre-Public)
+
+**Purpose:** Before Phase E (public launch), give every user one obvious path — like **I-Day at the U.S. Air Force Academy**: a clear beginning, staged training, standards, and commissioning into daily operations. The UI stays **simple enough that nobody gets lost** (one primary action per screen, plain language, progressive disclosure).
+
+**Not official DoD product:** Mission Winning is a civilian health PWA. We borrow **structure and discipline** from military onboarding (in-processing → basic training → readiness → duty), not branding, rank, or endorsement.
+
+Related: [vision.md](../vision.md) · [PLAN.md](PLAN.md) · [PROTECTION.md](PROTECTION.md) · [FLOW_ARCHITECTURE.md](FLOW_ARCHITECTURE.md)
+
+---
+
+## Design principle: “Simple for stupidity”
+
+Interpreted as **foolproof**, not insulting — minimum cognitive load, maximum follow-through.
+
+| Rule | What it means in the app |
+|------|---------------------------|
+| **One boss screen** | `/log` (Today) always answers: *“What do I do right now?”* |
+| **One primary button** | Each screen has exactly one green/hero CTA; everything else is secondary or hidden |
+| **Five taps max** | Any daily habit (train, fuel, move, mind) completable in ≤5 taps from Today |
+| **No wall of links** | Sidebar collapses to **Journey + 5 mobile tabs**; advanced tools behind “More” |
+| **Plain words** | “Start workout” not “Initialize session”; “Your checklist” not “Onboarding pipeline” |
+| **Progress always visible** | Journey stepper at top of Today until **Commissioned** |
+| **Fail-safe defaults** | Skip sign-in until step 4; bodyweight program if no equipment chosen |
+
+**Anti-patterns to remove before public:**
+- 14+ sidebar links on desktop (overwhelming vs mobile’s 5 tabs)
+- Mission Setup buried in Profile (should be **step 1 of Journey**, not optional)
+- Multiple competing CTAs on HomePage (Quick start + Today’s workout + starters + sign-in banner)
+- Premium/demo/sign-in forms repeated on Library, History, Nutrition
+
+---
+
+## The Mission Journey (DoD-inspired phases)
+
+Analogous to **In-processing Day → Basic Training → Readiness → Commissioning → Operational Duty**.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 0          PHASE 1           PHASE 2          PHASE 3            │
+│  I-DAY            BASIC TRAINING    READINESS        COMMISSIONED       │
+│  (Intake)         (First wins)      (Standards)      (Daily duty)       │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Welcome          1st workout       Build streak +   Today command      │
+│  Name & goal      (wedge only)        PAR-Q to exit     Journey = maint.   │
+│  Equipment        soft Coach          Win Score        Optional pillars  │
+│  Optional sign-in                     (commission)     in “More”         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Phase 0 — I-Day: *Where the Journey Begins*
+
+*Like Academy in-processing: one queue, one checklist, no choices until each step is done.*
+
+| Step | User sees | System does | Route / component |
+|------|-----------|-------------|-------------------|
+| 0.1 | “Welcome, Mission Member” + single **Begin** | Set `mw_journey_started` | New `/welcome` or modal on first visit |
+| 0.2 | **Mission statement** (1 screen, scroll) + “I accept the path” | Log acceptance timestamp | Static copy from vision.md (short) |
+| 0.3 | **3 questions only:** experience, equipment, primary goal | Writes `mw_experience`, `mw_equipment`, `mw_primary_goal` | Move from Profile → dedicated flow |
+| 0.4 | **Gear check:** “What you have today” (bodyweight / dumbbells / full gym) | Filters Today’s workout + library | Same data, simpler UI |
+| 0.5 | Optional: **Sign in for cloud** (skip allowed) | Magic link | One line, not a wall of text |
+
+**Exit criteria:** I-Day complete → land on Today with Journey card showing Phase 1.
+
+**Copy example (I-Day header):**  
+> *Incoming members begin here. In-processing marks the start of your path toward lifelong health — one step at a time.*
+
+---
+
+### Phase 1 — Basic Training: *First workout (wedge)*
+
+*Horizon W (2026-07-23): Basic Training is **first workout only** — not a six-pillar scavenger hunt. Other pillars stay free and available; they are not journey gates.*
+
+| Milestone | Action | Unlock |
+|-----------|--------|--------|
+| BT-1 | Complete **first workout** (gear-matched Just Go / I-Day session) | Advance toward Readiness; soft Coach invite |
+
+**UI:** Today shows **train / resume** as the hero CTA. Fuel / Move / Mind / Learn are not required to leave Basic.
+
+**Exit criteria:** First workout logged → Phase 2 (Readiness).
+
+---
+
+### Phase 2 — Readiness: *Standards before full access*
+
+*Like fitness assessment / PAR-Q before full program — safety and baseline.*
+
+| Requirement | App feature | Notes |
+|-------------|-------------|-------|
+| **Boss pin (Today)** | Train / session 2 / streak commitment at `/active` | **Flow-6:** while `!streakMet`, JourneyHero primary is train — never PAR-Q or guidebook as the dock boss |
+| Health screen | `/assessments` PAR-Q (existing) | Required to *commission*; First Steps + Assessments — not free-logger gate |
+| Baseline | First **Win Score** computed | Show on Today |
+| Commitment | **7-day training streak** OR 5 workouts in 14 days | Uses existing streak logic |
+| Accountability | Enable **daily Mind check-in** prompt (1 tap dismiss) | Optional but encouraged |
+
+**Exit criteria (commissioning only):** PAR-Q complete + streak/commitment met + Win Score visible → **Commissioning ceremony**.  
+Exit criteria are **not** the same as the Today dock primary — see [FLOW_ARCHITECTURE.md](FLOW_ARCHITECTURE.md) readiness boss rule and `pickReadinessPrimaryAction`.
+
+---
+
+### Phase 3 — Commissioned: *Operational duty*
+
+*Like commissioning: you know the job; Today is command center.*
+
+- Journey stepper **minimized** to a thin progress ring (“Day 47 · Mission Operator”).
+- Full **5-tab mobile nav** + **More** drawer for Move, Mind, Learn, Builder, Library, History, Bundle.
+- Sidebar on desktop **mirrors mobile** (not 14 links) — see § Navigation simplification.
+- Weekly **commander's intent** line on Today (one sentence from coach rules, not AI yet).
+
+**Optional advanced path (premium):** “Specialist track” in Learn / Super Bundle — never blocks free core.
+
+---
+
+## Navigation simplification (Phase F1)
+
+### Mobile (shipped)
+
+Pinned by `MOBILE_TAB_HREFS` in `src/lib/primaryNav.ts` (+ unit test):
+
+| Tab | Role |
+|-----|------|
+| Today (`/log`) | Command center |
+| Train (`/active`) | Active workout + quick start |
+| Coach (`/coach`) | AI weekly plan |
+| Fuel (`/nutrition`) | Nutrition log |
+| More (sheet) | Track, You, Move, Mind, Learn, History, … |
+
+### Desktop / “More” menu
+
+Replace 14 sidebar items with:
+
+```
+TODAY | TRAIN | COACH | FUEL | MORE ▾
+                                Track · You · Move · Mind · Learn
+                                History · Library · Builder · Assessments
+                                Super Bundle · Vision
+```
+
+**Implementation:** `AppLayout` — collapsed sidebar mode + `MoreSheet` component.
+
+---
+
+## Today Hub redesign (Phase F2)
+
+**Current problem:** HomePage stacks metrics, challenges, today’s workout, hero CTA, starters, sign-in, pillar wins — too many decisions.
+
+**Target layout (top → bottom):**
+
+1. **Journey strip** — “Phase 1 · Step 2 of 5 · Log your first meal” + progress bar  
+2. **ONE hero button** — context from journey engine  
+3. **Mission Score** — single number + tap for pillar breakdown (existing)  
+4. **Readiness row** — 3 rings (existing MetricsRow), collapsed on mobile if not commissioned  
+5. **Everything else** — accordion “Details” (challenges, coach insight, starters)
+
+**Rule:** If journey phase &lt; 3, hide Builder, Benchmarks, and secondary starters.
+
+---
+
+## Journey engine (Phase F2 — technical)
+
+New module: `src/lib/missionJourney.ts`
+
+```typescript
+type JourneyPhase = 'i-day' | 'basic' | 'readiness' | 'commissioned';
+
+interface JourneyState {
+  phase: JourneyPhase;
+  iDayComplete: boolean;
+  basic: { workout: boolean; fuel: boolean; move: boolean; mind: boolean; learn: boolean };
+  readiness: { parq: boolean; streak: boolean; winScoreSeen: boolean };
+  commissionedAt?: string;
+}
+
+function getNextAction(state: JourneyState): { label: string; href: string; phase: JourneyPhase };
+```
+
+**Persistence:** `localStorage` + optional Supabase `profiles.journey_state` jsonb (Phase F3).
+
+**Hooks:** `useMissionJourney()` drives Today hero + welcome flow.
+
+---
+
+## DoD / military-adjacent requirements (civilian app)
+
+What we **should** incorporate (structure, not affiliation):
+
+| Theme | Civilian implementation |
+|-------|-------------------------|
+| Clear entry | I-Day welcome + checklist |
+| Standards | PAR-Q, readiness score, streak |
+| Progressive training | BT milestones before full app |
+| Accountability | Streaks, check-ins, history |
+| Single chain of command | Today tells you the next step |
+| Physical readiness | Win Score + assessments |
+
+What we **must not** do:
+
+- DoD seals, “official” claims, rank insignia without permission  
+- Stolen military UI that implies government endorsement  
+- Overly aggressive “boot camp” tone that conflicts with inclusive global mission  
+
+**Tone:** Disciplined, welcoming, plain — *“The path forward is clear.”*
+
+---
+
+## Implementation plan (Phase F)
+
+Work **before** `PRIVATE_MODE=false`. Can overlap with PROTECTION P0.
+
+### F1 — Foundation (1 branch)
+
+- [x] `missionJourney.ts` + `useMissionJourney()`  
+- [x] `/welcome` I-Day flow (3–5 screens, skippable sign-in)  
+- [x] Redirect first-time users: no `mw_journey_started` → `/welcome`  
+- [x] Today hero driven by `getNextAction()`  
+- [x] Remove duplicate sign-in blocks from Library, History, Nutrition (link to You tab)
+
+### F2 — Simplify chrome (1 branch)
+
+- [x] Sidebar → 5 primary + More sheet  
+- [x] HomePage accordion for secondary content  
+- [x] Profile: Mission Setup becomes “Edit Journey Profile” (link back to I-Day fields)  
+- [x] Commissioning moment (modal + `mw_commissioned_at`)  
+- [x] Copy pass: short labels everywhere (see glossary below)
+
+### G1 — Global languages
+
+- [x] Tier 1: DE, IT, KO, **JA** + EN/ES/FR/PT/RU (nav, welcome, journey chrome)
+- [x] Tier 2 (started): **TH**, **VI**, **HI** — same core chrome; see [PRE_LAUNCH_PLAN.md](archive/PRE_LAUNCH_PLAN.md)
+- [ ] Tier 2 next: zh, ar, id, tr, pl (+ RTL for Arabic)
+- [ ] G2 extract: Today, Welcome, Active, Nutrition → JSON per language
+- [x] Dynamic `<html lang>`
+
+### G2 — Form guides (text-only)
+
+- [x] 50+ exercises with structured text guides
+- [ ] Video/CDN (deferred)
+
+### F3 — Persist & polish (1 branch)
+
+- [x] Supabase `profiles.journey_state` + sync on sign-in  
+- [x] Journey badge on Profile (“Mission Operator · Day N”)  
+- [x] Optional: email nudge via Resend (“Complete BT-2: log protein”)  
+- [x] Analytics events: `journey_phase_complete`  
+
+### F4 — Then Phase E (public)
+
+- [x] Privacy + Terms pages (`/privacy`, `/terms`)
+- [x] Beta funnel API (`/api/beta/metrics`) + founder panel on Profile
+- [ ] PROTECTION.md P0 checklist (manual: rotate secrets, Vercel env)
+- [ ] Beta with **10 users** — measure: % who finish I-Day, % commissioned in 14 days  
+- [ ] `PRIVATE_MODE=false` only if I-Day → BT completion ≥60% in beta  
+
+---
+
+## Copy glossary (plain language)
+
+| Avoid | Use |
+|-------|-----|
+| Dashboard | **Today** |
+| Initialize / commence | **Start** |
+| Onboarding | **I-Day** or **First steps** |
+| Macro logging | **Log food** |
+| Pillar win | **Done ✓** |
+| Super Bundle synergy | **Unlock all tools** |
+| Mission Setup | **Your profile** |
+
+---
+
+## Success metrics (pre-public beta)
+
+| Metric | Target |
+|--------|--------|
+| I-Day completion (started → finished) | ≥80% |
+| First workout within 24h of I-Day | ≥50% |
+| Basic Training complete (**first workout**, per Phase 1 above) | see [ORCHESTRATION.md](../ORCHESTRATION.md) Horizon 0 task 5 |
+| Commissioned within 14 days | ≥25% |
+| Support tickets “where do I start?” | →0 |
+
+---
+
+## Relationship to other docs
+
+| Doc | Role |
+|-----|------|
+| **JOURNEY.md** (this file) | UX + member path before public |
+| **PROTECTION.md** | Security + competitive gaps |
+| **PLAN.md** | Phase A–F roadmap |
+| **vision.md** | Mission and pillars (unchanged) |
+
+---
+
+## Next step for implementation
+
+Start **Phase F1** on branch `cursor/journey-i-day-699d`:
+
+1. Add `missionJourney.ts` and `/welcome`  
+2. Wire Today hero to journey state  
+3. Ship for your review before sidebar surgery (F2)
+
+Say **“Start Phase F1”** to begin building.
+
+*Last updated: 2026-06-29*

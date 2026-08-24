@@ -1,0 +1,745 @@
+'use client';
+/**
+ * Page: /history — past workouts
+ * See: app/INDEX.md, src/page-components/INDEX.md
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import { useLocaleFormat } from '@/hooks/useLocaleFormat';
+import { Calendar, Dumbbell, History as HistoryIcon, SearchX, Timer, Trophy } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import dynamic from 'next/dynamic';
+import { SkeletonBlock } from '@/components/ui/Skeleton';
+import { MuscleHeatmap } from '@/components/history/MuscleHeatmap';
+import { getJournalEntry } from '@/lib/journal/journalStore';
+import { JournalTimeline } from '@/components/history/JournalTimeline';
+import { HistoryCalendar } from '@/components/history/HistoryCalendar';
+import { AnatomyHeatMap } from '@/components/history/AnatomyHeatMap';
+
+const History1RMChart = dynamic(
+  () => import('@/components/history/HistoryCharts').then((m) => m.History1RMChart),
+  { ssr: false, loading: () => <SkeletonBlock className="h-48" label="Loading 1RM chart" /> }
+);
+const HistoryVolumeChart = dynamic(
+  () => import('@/components/history/HistoryCharts').then((m) => m.HistoryVolumeChart),
+  { ssr: false, loading: () => <SkeletonBlock className="h-48" label="Loading volume chart" /> }
+);
+import { getExerciseById } from '@/data/exercises';
+import { useUnits, weightUnitLabel } from '@/hooks/useUnits';
+import { cn, formatDuration } from '@/lib/utils';
+import { countsTowardVolume, setKindBadgeClass, setKindDefaultLabel, setKindLabelKey } from '@/lib/workout/setKind';
+import {
+  build1RMChartData,
+  buildMuscleHeatmap,
+  buildWeeklyVolumeTimeline,
+  historySummaryStats,
+  pickChartExerciseId,
+} from '@/lib/historyAnalytics';
+import {
+  daysWithDataCount,
+  firstDayWithData,
+  sweepDaysWithData,
+} from '@/lib/journey/daysWithData';
+import { getExercisesWithBenchmarkData } from '@/lib/benchmarks';
+import { hasLoggedWork, useWorkoutStore } from '@/store/workoutStore';
+import type { CompletedWorkoutLog } from '@/types';
+import { getUser, getUserNutritionForDate, type CloudNutritionEntry } from '@/lib/supabase';
+import { PillarPageShell } from '@/components/layout/PillarPageShell';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Input } from '@/components/ui/input';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { localDateKey, localDateKeyFromIso, formatLocalDateKey } from '@/lib/time/localDate';
+import { templateFromCompletedLog } from '@/lib/workout/historyRetrain';
+import { track } from '@/lib/analytics';
+import { MUSCLE_GROUP_I18N } from '@/lib/muscleGroups';
+import {
+  liveSessionLogs,
+  toSessionHistoryRow,
+} from '@/lib/history/sessionHistoryList';
+
+const HEATMAP_WINDOW_DAYS = 14;
+
+type RangeFilter = '7' | '30' | 'all';
+type HistoryTab = 'calendar' | 'exercises' | 'journal';
+
+export function HistoryPage() {
+  const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const fmt = useLocaleFormat();
+  const units = useUnits();
+  const unitLabel = weightUnitLabel(units);
+  const workoutHistory = useWorkoutStore((s) => s.workoutHistory);
+  const hasHydrated = useWorkoutStore((s) => s.hasHydrated);
+  const loadFromCloud = useWorkoutStore((s) => s.loadFromCloud);
+  const startWorkout = useWorkoutStore((s) => s.startWorkout);
+  const activeWorkout = useWorkoutStore((s) => s.activeWorkout);
+  const liveHistory = useMemo(() => liveSessionLogs(workoutHistory), [workoutHistory]);
+  const [selected, setSelected] = useState<CompletedWorkoutLog | null>(null);
+
+  /** K7/K11 — start freestyle from a finished log; never wipe a logged session. */
+  const retrainFromLog = (log: CompletedWorkoutLog) => {
+    const template = templateFromCompletedLog(log);
+    if (!template) return;
+    if (hasLoggedWork(activeWorkout)) {
+      setSelected(null);
+      router.push('/active');
+      return;
+    }
+    startWorkout(template.name, template.exercises);
+    track('history_train_again', { exerciseCount: template.exercises.length });
+    setSelected(null);
+    router.push('/active');
+  };
+  const [cloudSynced, setCloudSynced] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [pillarWins, setPillarWins] = useState<CloudNutritionEntry[]>([]);
+  const [chartExerciseId, setChartExerciseId] = useState('');
+  const [nameQuery, setNameQuery] = useState('');
+  const [range, setRange] = useState<RangeFilter>('30');
+  const [visibleCount, setVisibleCount] = useState(30);
+  const [tab, setTab] = useState<HistoryTab>('calendar');
+
+  /*
+   * Days the athlete used the app without lifting.
+   *
+   * Read from the pillar-win rows this page already loads rather than opening
+   * five more stores — `.178`: the calendar and the "Pillar Wins" list below it
+   * must not be able to disagree about what happened on a day.
+   */
+  const loggedDayKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const w of pillarWins) {
+      const key = localDateKeyFromIso(w.date ?? '');
+      if (key) keys.add(key);
+    }
+    return keys;
+  }, [pillarWins]);
+
+  const filteredHistory = useMemo(() => {
+    const q = nameQuery.trim().toLowerCase();
+    const cutoff =
+      range === 'all'
+        ? 0
+        : Date.now() - Number(range) * 24 * 60 * 60 * 1000;
+    return liveHistory.filter((log) => {
+      if (cutoff && new Date(log.completedAt).getTime() < cutoff) return false;
+      if (q && !log.workoutName.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [liveHistory, nameQuery, range]);
+
+  const visibleHistory = useMemo(
+    () => filteredHistory.slice(0, visibleCount),
+    [filteredHistory, visibleCount]
+  );
+
+  const weeklyVolume = useMemo(
+    () => buildWeeklyVolumeTimeline(workoutHistory, 12, i18n.language),
+    [workoutHistory, i18n.language]
+  );
+  const heatmapCells = useMemo(
+    () => buildMuscleHeatmap(workoutHistory, HEATMAP_WINDOW_DAYS),
+    [workoutHistory]
+  );
+  const exerciseIds = useMemo(
+    () => getExercisesWithBenchmarkData(workoutHistory),
+    [workoutHistory]
+  );
+  const defaultExerciseId = useMemo(() => pickChartExerciseId(workoutHistory), [workoutHistory]);
+  const activeChartId = chartExerciseId || defaultExerciseId || '';
+  const oneRmData = useMemo(
+    () => (activeChartId ? build1RMChartData(activeChartId, workoutHistory) : []),
+    [activeChartId, workoutHistory]
+  );
+  const summary = useMemo(() => historySummaryStats(workoutHistory), [workoutHistory]);
+
+  /*
+   * `.247` — the day set is swept on load rather than written at each log site.
+   * Six writers is six chances to miss the seventh, and the failure is silent
+   * (`.220`). Depends on `workoutHistory` so a session logged this visit counts
+   * without a reload.
+   */
+  const [dayStats, setDayStats] = useState<{ count: number; first: string | null }>({
+    count: 0,
+    first: null,
+  });
+  useEffect(() => {
+    sweepDaysWithData(workoutHistory.map((w) => w.completedAt));
+    setDayStats({ count: daysWithDataCount(), first: firstDayWithData() });
+  }, [workoutHistory]);
+
+  const briefingLine = useMemo(() => {
+    if (liveHistory.length === 0) {
+      return t('historyBriefingEmpty', {
+        defaultValue: 'Your mission story starts with the first logged set.',
+      });
+    }
+    const sessions = summary.sessionCount;
+    const vol = summary.totalVolume;
+    return t('historyBriefingLine', {
+      count: sessions,
+      volume: fmt.num(vol),
+      defaultValue: `${sessions} sessions · ${fmt.num(vol)} total volume — consistency compounds.`,
+    });
+  }, [liveHistory.length, summary, t, fmt]);
+
+  useEffect(() => {
+    const sync = async () => {
+      setSyncing(true);
+      const user = await getUser();
+      if (user) {
+        await loadFromCloud();
+        setCloudSynced(true);
+        try {
+          const today = localDateKey();
+          const cloud = await getUserNutritionForDate(today);
+          const wins = cloud.filter((c: CloudNutritionEntry) =>
+            /win|assessment|mobility|mind|track|learn|move/i.test(c.name || '')
+          );
+          setPillarWins(wins);
+        } catch {
+          /* offline */
+        }
+      }
+      setSyncing(false);
+    };
+    sync();
+  }, [loadFromCloud]);
+
+  const sessionLabel = t('historySessionCount', {
+    count: liveHistory.length,
+    defaultValue: '{{count}} completed session',
+  });
+
+  return (
+    <PillarPageShell
+      icon={HistoryIcon}
+      eyebrow={t('historyEyebrow', { defaultValue: 'History' })}
+      title={t('historyTitle', { defaultValue: 'Workout History' })}
+      subtitle={t('historySubtitle', {
+        defaultValue: 'Your history powers Today readiness and Mission Score.',
+      })}
+    >
+      {!hasHydrated ? (
+        <SkeletonBlock className="h-32" label="Loading sessions" />
+      ) : liveHistory.length === 0 ? (
+        <div data-testid="session-history-empty">
+          <EmptyState
+            icon={Dumbbell}
+            illustrationSrc="/brand/mascot/kalligator-invite.webp"
+            illustrationAlt=""
+            title={t('historyEmptyTitle', { defaultValue: 'No sessions yet' })}
+            description={t('historyEmptyDesc', {
+              defaultValue: 'Log one set from Today — History fills from what you finish.',
+            })}
+            actionLabel={t('historyStartWorkout', { defaultValue: 'Open Today' })}
+            href="/log"
+          />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Input
+              type="search"
+              value={nameQuery}
+              onChange={(e) => setNameQuery(e.target.value)}
+              placeholder={t('historySearchPlaceholder', {
+                defaultValue: 'Search by workout name…',
+              })}
+              className="sm:flex-1 min-h-[44px]"
+              aria-label={t('historySearchPlaceholder', {
+                defaultValue: 'Search by workout name…',
+              })}
+            />
+            <div className="flex flex-wrap gap-1.5">
+              {(
+                [
+                  ['7', 'Last 7'],
+                  ['30', 'Last 30'],
+                  ['all', 'All'],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    setRange(value);
+                    setVisibleCount(30);
+                  }}
+                  className={
+                    range === value
+                      ? 'min-h-[44px] tap-target border-2 border-transparent bg-primary-fill px-3 text-xs font-semibold text-primary-foreground'
+                      : 'min-h-[44px] tap-target border-2 border-border px-3 text-xs font-semibold text-muted-foreground hover:bg-muted'
+                  }
+                >
+                  {t(`historyRange${value}`, { defaultValue: label })}
+                </button>
+              ))}
+            </div>
+          </div>
+          {filteredHistory.length === 0 ? (
+            <EmptyState
+              icon={SearchX}
+              title={t('historyNoMatches', { defaultValue: 'No sessions match these filters' })}
+              description={t('historyNoMatchesDesc', {
+                defaultValue: 'Widen the range or clear search.',
+              })}
+              actionLabel={t('historyClearFilters', { defaultValue: 'Clear filters' })}
+              onAction={() => {
+                setNameQuery('');
+                setRange('all');
+              }}
+            />
+          ) : (
+            <div className="space-y-3" data-testid="session-history-list">
+            {visibleHistory.map((log) => {
+              const row = toSessionHistoryRow(log);
+              if (!row) return null;
+              const muscleLine = row.muscles
+                .map((g) => t(MUSCLE_GROUP_I18N[g], { defaultValue: g }))
+                .join(' · ');
+              const setLabel =
+                row.setCount === 1
+                  ? t('historySetCountOne', { defaultValue: '1 set' })
+                  : t('historySetCount', {
+                      count: row.setCount,
+                      defaultValue: `${row.setCount} sets`,
+                    });
+              return (
+              <Card
+                key={log.id}
+                className="content-card hover:border-foreground transition-colors"
+              >
+                <CardContent className="flex items-center justify-between gap-3 py-3 px-4">
+                  <button
+                    type="button"
+                    data-testid="session-history-row"
+                    className="min-h-[44px] min-w-0 flex-1 text-left"
+                    onClick={() => setSelected(log)}
+                    aria-label={t('historyOpenLog', {
+                      name: row.title,
+                      defaultValue: `Open log: ${row.title}`,
+                    })}
+                  >
+                    <p className="font-semibold truncate">{row.title}</p>
+                    {muscleLine ? (
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{muscleLine}</p>
+                    ) : null}
+                    <p className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5">
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {fmt.longDate(row.completedAt)}
+                      </span>
+                      <span>{setLabel}</span>
+                      <span className="inline-flex items-center gap-1">
+                        <Timer className="h-3 w-3" />
+                        {formatDuration(log.durationSeconds)}
+                      </span>
+                      <span>
+                        {fmt.num(log.totalVolume)} {unitLabel}
+                      </span>
+                    </p>
+                  </button>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    {templateFromCompletedLog(log) ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="min-h-[44px]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          retrainFromLog(log);
+                        }}
+                      >
+                        {t('historyTrainAgainShort', { defaultValue: 'Again' })}
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="min-h-[44px]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelected(log);
+                      }}
+                    >
+                      {t('historyDetails', { defaultValue: 'Details' })}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              );
+            })}
+            {filteredHistory.length > visibleCount ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full min-h-[44px]"
+                onClick={() => setVisibleCount((n) => n + 30)}
+              >
+                {t('historyLoadMore', {
+                  remaining: filteredHistory.length - visibleCount,
+                  defaultValue: `Show more (${filteredHistory.length - visibleCount} left)`,
+                })}
+              </Button>
+            ) : null}
+            </div>
+          )}
+        </div>
+      )}
+
+      <details className="group border-2 border-border bg-card">
+        <summary
+          className="flex min-h-[44px] cursor-pointer list-none items-center px-4 py-3 text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden"
+          data-testid="history-show-all"
+        >
+          {t('todayShowAll', { defaultValue: 'Show all' })}
+        </summary>
+        <div className="space-y-4 border-t-2 border-border p-4">
+      <div className="border-2 border-border bg-card px-4 py-3 space-y-1">
+        <p className="text-xs font-semibold tracking-wide text-muted-foreground">
+          {t('historyMissionStory', { defaultValue: 'At a glance' })}
+        </p>
+        <p className="text-sm text-foreground leading-relaxed">{briefingLine}</p>
+        {dayStats.count > 0 && (
+          <p className="text-sm text-foreground tabular-nums leading-relaxed">
+            {t('historyDaysLogged', {
+              count: dayStats.count,
+              defaultValue: `${fmt.num(dayStats.count)} days logged`,
+            })}
+            {dayStats.count > 0 && (
+              <>
+                {' · '}
+                <Link href={`/history/${localDateKey()}`} className="text-primary underline">
+                  {t('historyDayToday', { defaultValue: 'replay today' })}
+                </Link>
+              </>
+            )}
+            {dayStats.first && (
+              <span className="text-muted-foreground">
+                {' · '}
+                {t('historyDaysSince', {
+                  date: formatLocalDateKey(dayStats.first, i18n.language),
+                  defaultValue: `since ${formatLocalDateKey(dayStats.first, i18n.language)}`,
+                })}
+              </span>
+            )}
+          </p>
+        )}
+        {summary.sessionCount > 0 && (
+          <p className="text-xs text-muted-foreground tabular-nums leading-relaxed">
+            {t('historyAvgVolume', {
+              avg: fmt.num(summary.avgVolume),
+              unit: unitLabel,
+              defaultValue: `Recent avg volume ${fmt.num(summary.avgVolume)} ${unitLabel}`,
+            })}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <p className="text-muted-foreground text-sm">
+          <Link href="/log" className="underline">
+            {t('navToday', { defaultValue: 'Today' })}
+          </Link>
+        </p>
+        <p className="mt-1 text-muted-foreground">
+          {sessionLabel}
+          {syncing && t('historySyncing', { defaultValue: ' — syncing cloud…' })}
+          {!syncing && cloudSynced && t('historyCloudMerged', { defaultValue: ' — cloud merged' })}
+        </p>
+      </div>
+
+          <SegmentedControl
+            options={[
+              { value: 'calendar' as const, label: t('historyTabCalendar', { defaultValue: 'Calendar' }) },
+              { value: 'exercises' as const, label: t('historyTabExercises', { defaultValue: 'Exercises' }) },
+              { value: 'journal' as const, label: t('historyTabJournal', { defaultValue: 'Journal' }) },
+            ]}
+            value={tab}
+            onChange={setTab}
+            ariaLabel={t('historyTabsLabel', { defaultValue: 'History view' })}
+          />
+          {tab === 'calendar' ? (
+            <HistoryCalendar history={workoutHistory} loggedKeys={loggedDayKeys} />
+          ) : tab === 'journal' ? (
+            <JournalTimeline />
+          ) : tab === 'exercises' ? (
+            <div className="space-y-4" data-testid="history-exercises">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t('historyTrendsDesc', {
+                  defaultValue: 'Volume, estimated 1RM, and muscle heatmap',
+                })}
+              </p>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <HistoryVolumeChart data={weeklyVolume} />
+                <div className="space-y-2">
+                  {exerciseIds.length > 1 && (
+                    <Select value={activeChartId} onValueChange={setChartExerciseId}>
+                      <SelectTrigger className="w-full min-h-[44px]">
+                        <SelectValue
+                          placeholder={t('historySelectExercise', {
+                            defaultValue: 'Chart exercise',
+                          })}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {exerciseIds.map((id) => {
+                          const ex = getExerciseById(id);
+                          return (
+                            <SelectItem key={id} value={id}>
+                              {ex?.name ?? id}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <History1RMChart
+                    data={oneRmData}
+                    exerciseName={getExerciseById(activeChartId)?.name ?? activeChartId}
+                  />
+                </div>
+              </div>
+              <details className="group border-2 border-border bg-card">
+                <summary className="flex min-h-[44px] cursor-pointer list-none items-center px-4 py-3 text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                  {t('historyHeatmaps', { defaultValue: 'Muscle heatmaps' })}
+                </summary>
+                <div className="space-y-4 border-t-2 border-border p-4">
+                  <AnatomyHeatMap cells={heatmapCells} />
+                  <MuscleHeatmap cells={heatmapCells} windowDays={HEATMAP_WINDOW_DAYS} />
+                </div>
+              </details>
+            </div>
+          ) : null}
+
+      <div>
+        <h3 className="text-xl font-semibold flex items-center gap-2 mb-2">
+          <Trophy className="h-5 w-5" />{' '}
+          {t('historyPillarWins', { defaultValue: 'Pillar Wins & Habit Logs' })}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-2">
+          {t('historyPillarWinsDesc', {
+            defaultValue:
+              'Mobility wins, mind prompts, assessments logged from pillars appear here.',
+          })}
+        </p>
+        {pillarWins.length > 0 ? (
+          <div className="space-y-2">
+            {pillarWins.slice(0, 5).map((w, i) => (
+              <div
+                key={i}
+                className="text-sm p-3 border-2 border-border bg-card flex justify-between gap-2"
+              >
+                <span>
+                  {w.name}{' '}
+                  <span className="text-xs text-muted-foreground">
+                    ({fmt.longDate(w.date || new Date().toISOString())})
+                  </span>
+                </span>
+                <Link href="/nutrition" className="text-xs underline min-h-[44px] inline-flex items-center tap-target">
+                  {t('historyViewFuel', { defaultValue: 'View in Fuel' })}
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* `.241` — was hardcoded English (so it stayed English in all fifteen
+             locales) and it spoke in raw URLs: "Use /move or /mind". A path is
+             not a sentence, and the athlete cannot tap it. */
+          <p className="text-xs text-muted-foreground">
+            {t('historyNoPillarWins', {
+              defaultValue:
+                'No pillar wins logged today yet — a mobility flow, a check-in or an assessment all count.',
+            })}
+          </p>
+        )}
+      </div>
+        </div>
+      </details>
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent
+          className="max-w-lg max-h-[85vh] overflow-y-auto"
+          data-testid="session-history-log"
+        >
+          {selected && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selected.workoutName}</DialogTitle>
+                <DialogDescription>
+                  {fmt.longDate(selected.completedAt)} · {formatDuration(selected.durationSeconds)} ·{' '}
+                  {t('historySessionVolume', {
+                    volume: fmt.num(selected.totalVolume),
+                    unit: unitLabel,
+                    defaultValue: `${fmt.num(selected.totalVolume)} ${unitLabel} total volume`,
+                  })}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 mt-2">
+                {/* What the coach said when this session finished — persisted by
+                    `.184`; sessions completed before then simply have no entry. */}
+                {(() => {
+                  const entry = getJournalEntry(selected.id);
+                  if (!entry || (entry.lines.length === 0 && !entry.fragments?.length)) return null;
+                  return (
+                    <div className="border-l-2 border-primary pl-3 space-y-1">
+                      {/* The athlete's fragments open the entry — their words, verbatim. */}
+                      {entry.fragments?.map((fragment, i) => (
+                        <p key={`f-${i}`} className="text-sm italic text-foreground">
+                          {fragment}
+                        </p>
+                      ))}
+                      {entry.lines
+                        .filter((l) => l.kind !== 'question')
+                        .map((l, i) => (
+                          <p
+                            key={`${l.kind}-${i}`}
+                            className={
+                              l.kind === 'record'
+                                ? 'text-sm font-semibold text-poster'
+                                : 'text-sm text-muted-foreground'
+                            }
+                          >
+                            {l.text}
+                          </p>
+                        ))}
+                    </div>
+                  );
+                })()}
+                {selected.exercises.map((ex) => {
+                  const exercise = getExerciseById(ex.exerciseId);
+                  return (
+                    <div key={ex.exerciseId} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold">{exercise?.name ?? ex.exerciseId}</h4>
+                        {exercise?.muscleGroups.map((mg) => (
+                          <Badge key={mg} variant="muscle" className="text-[10px]">
+                            {mg}
+                          </Badge>
+                        ))}
+                      </div>
+                      {/* The note the athlete typed mid-session. It was written and
+                          synced from day one — and never displayed anywhere until
+                          `.184`. A note nobody can re-read is a note nobody writes. */}
+                      {ex.note?.trim() ? (
+                        <p className="text-sm italic text-muted-foreground border-l-2 border-border pl-3">
+                          {ex.note}
+                        </p>
+                      ) : null}
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t('historyTableSet', { defaultValue: 'Set' })}</TableHead>
+                            <TableHead>{t('historyTableType', { defaultValue: 'Type' })}</TableHead>
+                            <TableHead>{t('historyTableReps', { defaultValue: 'Reps' })}</TableHead>
+                            <TableHead>{t('historyTableWeight', { defaultValue: 'Weight' })}</TableHead>
+                            <TableHead>{t('historyTableVolume', { defaultValue: 'Volume' })}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ex.sets.map((set, i) => {
+                            const kind = set.kind ?? 'normal';
+                            const countsVolume = countsTowardVolume(kind);
+                            return (
+                              <TableRow
+                                key={i}
+                                className={cn(
+                                  // No per-kind row tint — the WARMUP /
+                                  // FAILURE tag says it, same call as
+                                  // src/lib/workout/setKind.ts.
+                                  kind !== 'normal' && 'bg-card'
+                                )}
+                              >
+                                <TableCell>{i + 1}</TableCell>
+                                <TableCell>
+                                  {kind === 'normal' ? (
+                                    <span className="text-muted-foreground">—</span>
+                                  ) : (
+                                    <Badge
+                                      variant="outline"
+                                      className={cn('text-[10px] uppercase', setKindBadgeClass(kind))}
+                                    >
+                                      {t(setKindLabelKey(kind), {
+                                        defaultValue: setKindDefaultLabel(kind),
+                                      })}
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>{set.reps}</TableCell>
+                                <TableCell>
+                                  {set.weight} {unitLabel}
+                                </TableCell>
+                                <TableCell>
+                                  {countsVolume ? (
+                                    <>
+                                      {fmt.num(set.reps * set.weight)} {unitLabel}
+                                    </>
+                                  ) : (
+                                    t('historyWarmupExcluded', { defaultValue: '—' })
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* K7 — return path: replay this session in Train. */}
+              {templateFromCompletedLog(selected) ? (
+                <div className="pt-2 border-t-2 border-border">
+                  <Button
+                    type="button"
+                    className="w-full min-h-[44px] primary-action"
+                    onClick={() => retrainFromLog(selected)}
+                  >
+                    {t('historyTrainAgain', { defaultValue: 'Train this again' })}
+                  </Button>
+                </div>
+              ) : null}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        <Link
+          href="/account"
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          {t('historySignInFoot', { defaultValue: 'Sign in (optional) to load full cloud history.' })}
+        </Link>
+      </p>
+    </PillarPageShell>
+  );
+}

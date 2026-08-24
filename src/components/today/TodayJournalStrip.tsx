@@ -1,0 +1,101 @@
+'use client';
+
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import {
+  BookOpen,
+  Brain,
+  Dumbbell,
+  MapPin,
+  UtensilsCrossed,
+  Wind,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { JournalEntry, JournalPillar } from '@/lib/todayTrends';
+import { cn } from '@/lib/utils';
+import { formatJournalWhen } from '@/lib/time/localDate';
+
+const PILLAR_META: Record<
+  JournalPillar,
+  {
+    icon: LucideIcon;
+    labelKey: keyof import('@/i18n/todayLocales').TodayStrings;
+    /** English floor — never fall back to the pillar id (raw "train" on hydrate). */
+    labelDefault: string;
+    href: string;
+  }
+> = {
+  train: { icon: Dumbbell, labelKey: 'todayPillarTrain', labelDefault: 'Train', href: '/history' },
+  fuel: { icon: UtensilsCrossed, labelKey: 'todayPillarFuel', labelDefault: 'Fuel', href: '/nutrition' },
+  move: { icon: Wind, labelKey: 'todayPillarMove', labelDefault: 'Move', href: '/move' },
+  mind: { icon: Brain, labelKey: 'todayPillarMind', labelDefault: 'Mind', href: '/mind' },
+  track: { icon: MapPin, labelKey: 'todayPillarTrack', labelDefault: 'Track', href: '/track' },
+  learn: { icon: BookOpen, labelKey: 'todayPillarLearn', labelDefault: 'Learn', href: '/learn' },
+};
+
+type Props = {
+  entries: JournalEntry[];
+  locale: string;
+  className?: string;
+};
+
+export function TodayJournalStrip({ entries, locale, className }: Props) {
+  const { t } = useTranslation();
+
+  if (!entries.length) {
+    // A ruled box, not a dashed one. Copy is the repo's, not the mock's — the
+    // handoff's own brief keeps copy unchanged, and rewording costs 13 locales.
+    return (
+      <div className={cn('space-y-3 border-2 border-border p-6', className)}>
+        <p className="text-sm text-muted-foreground">
+          {t('todayJournalEmpty', {
+            defaultValue:
+              'Nothing logged yet — train, fuel, or check in on Mind to start your strip.',
+          })}
+        </p>
+        {/* Outline, not a red fill. Today docks exactly one red action and this
+            is a secondary route into Mind — found by `check-display-type` the
+            day that rule was written, which is the rule working. */}
+        <Link
+          href="/mind"
+          className="inline-flex min-h-[44px] items-center border-2 border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+        >
+          {t('todayJournalViewMind', { defaultValue: 'Log check-in →' })}
+        </Link>
+      </div>
+    );
+  }
+
+  // A ruled table, not a stack of cards: these are log lines, and 1px rules
+  // between them read as one record instead of six floating objects.
+  return (
+    <div className={cn('border-t border-border', className)}>
+      {entries.map((entry) => {
+        const meta = PILLAR_META[entry.pillar];
+        const Icon = meta.icon;
+        return (
+          <Link
+            key={entry.id}
+            href={meta.href}
+            className="flex min-h-[44px] items-start gap-3 border-b border-border px-1 py-2.5 transition-colors hover:bg-muted"
+          >
+            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                <span>{t(meta.labelKey, { defaultValue: meta.labelDefault })}</span>
+                <span aria-hidden>·</span>
+                <time dateTime={entry.at} className="tabular-nums">
+                  {formatJournalWhen(entry.at, locale)}
+                </time>
+              </div>
+              <p className="truncate text-sm font-semibold">{entry.title}</p>
+              {entry.detail && (
+                <p className="truncate text-xs text-muted-foreground">{entry.detail}</p>
+              )}
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}

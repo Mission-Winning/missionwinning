@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none" role="img" aria-label="Leg press: start, bend, press">
+  <title>Leg press form diagram</title>
+  <rect width="360" height="220" fill="#f3f2f2"></rect>
+  <text x="60" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">START</text>
+  <text x="180" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">BEND</text>
+  <text x="300" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">PRESS</text>
+  <line x1="20" y1="185" x2="100" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="140" y1="185" x2="220" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="260" y1="185" x2="340" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <rect x="28" y="100" width="48" height="48" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="69" cy="63" r="9"></circle>
+    <line x1="69" y1="63" x2="69" y2="77"></line>
+    <line x1="69" y1="77" x2="68" y2="127.5"></line>
+    <line x1="69" y1="77" x2="67" y2="81"></line>
+    <line x1="67" y1="81" x2="86" y2="87"></line>
+    <line x1="86" y1="87" x2="104" y2="85"></line>
+    <line x1="67" y1="81" x2="90" y2="93"></line>
+    <line x1="90" y1="93" x2="108" y2="91"></line>
+    <line x1="68" y1="127.5" x2="57.5" y2="148"></line>
+    <line x1="57.5" y1="148" x2="50.5" y2="185"></line>
+    <line x1="68" y1="127.5" x2="83.5" y2="150"></line>
+    <line x1="83.5" y1="150" x2="88" y2="185"></line>
+  </g>
+  <rect x="102" y="105" width="16" height="38" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <rect x="148" y="100" width="48" height="48" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="191" cy="79" r="9"></circle>
+    <line x1="191" y1="79" x2="191" y2="93"></line>
+    <line x1="191" y1="93" x2="188" y2="146.5"></line>
+    <line x1="191" y1="93" x2="189" y2="97"></line>
+    <line x1="189" y1="97" x2="206" y2="103"></line>
+    <line x1="206" y1="103" x2="224" y2="101"></line>
+    <line x1="189" y1="97" x2="210" y2="109"></line>
+    <line x1="210" y1="109" x2="228" y2="107"></line>
+    <line x1="188" y1="146.5" x2="172.5" y2="154"></line>
+    <line x1="172.5" y1="154" x2="167.5" y2="185"></line>
+    <line x1="188" y1="146.5" x2="206.5" y2="156"></line>
+    <line x1="206.5" y1="156" x2="212" y2="185"></line>
+  </g>
+  <rect x="222" y="125" width="16" height="38" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <path d="M238 115 L238 145" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon points="238,145 234,137 242,137" fill="#ec3013"></polygon>
+  <rect x="268" y="100" width="48" height="48" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="309" cy="63" r="9"></circle>
+    <line x1="309" y1="63" x2="309" y2="77"></line>
+    <line x1="309" y1="77" x2="308" y2="127.5"></line>
+    <line x1="309" y1="77" x2="307" y2="81"></line>
+    <line x1="307" y1="81" x2="326" y2="87"></line>
+    <line x1="326" y1="87" x2="344" y2="85"></line>
+    <line x1="307" y1="81" x2="330" y2="93"></line>
+    <line x1="330" y1="93" x2="348" y2="91"></line>
+    <line x1="308" y1="127.5" x2="297.5" y2="148"></line>
+    <line x1="297.5" y1="148" x2="290.5" y2="185"></line>
+    <line x1="308" y1="127.5" x2="323.5" y2="150"></line>
+    <line x1="323.5" y1="150" x2="328" y2="185"></line>
+  </g>
+  <rect x="342" y="105" width="16" height="38" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <path d="M358 150 L358 115" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon points="358,115 362,123 354,123" fill="#ec3013"></polygon>
+  <text x="368" y="132.5" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="9">press</text>
+</svg>

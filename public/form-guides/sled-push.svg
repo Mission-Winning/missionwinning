@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none" role="img" aria-label="Sled push: lean, drive, finish">
+  <title>Sled push form diagram</title>
+  <rect width="360" height="220" fill="#f3f2f2"></rect>
+  <text x="60" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">LEAN</text>
+  <text x="180" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">DRIVE</text>
+  <text x="300" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">FINISH</text>
+  <line x1="20" y1="185" x2="100" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="140" y1="185" x2="220" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="260" y1="185" x2="340" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <rect x="88" y="122" width="38" height="32" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="86.6" cy="75.6" r="9"></circle>
+    <line x1="86.6" y1="75.6" x2="80.6" y2="89.6"></line>
+    <line x1="80.6" y1="89.6" x2="60" y2="128"></line>
+    <line x1="80.6" y1="89.6" x2="78.6" y2="93.6"></line>
+    <line x1="78.6" y1="93.6" x2="88.6" y2="111.6"></line>
+    <line x1="88.6" y1="111.6" x2="64" y2="120"></line>
+    <line x1="78.6" y1="93.6" x2="92.6" y2="115.6"></line>
+    <line x1="92.6" y1="115.6" x2="74" y2="120"></line>
+    <line x1="60" y1="128" x2="50" y2="155"></line>
+    <line x1="50" y1="155" x2="42" y2="185"></line>
+    <line x1="60" y1="128" x2="72" y2="155"></line>
+    <line x1="72" y1="155" x2="80" y2="185"></line>
+  </g>
+  <circle cx="60" cy="128" r="3.5" fill="#ec3013"></circle>
+  <text x="60" y="120" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">lean</text>
+  <rect x="212" y="122" width="38" height="32" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="205.2" cy="75.2" r="9"></circle>
+    <line x1="205.2" y1="75.2" x2="199.2" y2="89.2"></line>
+    <line x1="199.2" y1="89.2" x2="180" y2="128"></line>
+    <line x1="199.2" y1="89.2" x2="197.2" y2="93.2"></line>
+    <line x1="197.2" y1="93.2" x2="207.2" y2="111.2"></line>
+    <line x1="207.2" y1="111.2" x2="184" y2="118"></line>
+    <line x1="197.2" y1="93.2" x2="211.2" y2="115.2"></line>
+    <line x1="211.2" y1="115.2" x2="194" y2="118"></line>
+    <line x1="180" y1="128" x2="170" y2="155"></line>
+    <line x1="170" y1="155" x2="162" y2="185"></line>
+    <line x1="180" y1="128" x2="192" y2="155"></line>
+    <line x1="192" y1="155" x2="200" y2="185"></line>
+  </g>
+  <path d="M192 158 L212 140" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon points="212,140 208.72950575651248,148.32489443796825 203.37778790353286,142.37854126799093" fill="#ec3013"></polygon>
+  <text x="212" y="149" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="9">drive</text>
+  <rect x="332" y="122" width="38" height="32" fill="none" stroke="#201e1d" stroke-width="2"></rect>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="322.4" cy="74.4" r="9"></circle>
+    <line x1="322.4" y1="74.4" x2="316.4" y2="88.4"></line>
+    <line x1="316.4" y1="88.4" x2="300" y2="128"></line>
+    <line x1="316.4" y1="88.4" x2="314.4" y2="92.4"></line>
+    <line x1="314.4" y1="92.4" x2="324.4" y2="110.4"></line>
+    <line x1="324.4" y1="110.4" x2="304" y2="115"></line>
+    <line x1="314.4" y1="92.4" x2="328.4" y2="114.4"></line>
+    <line x1="328.4" y1="114.4" x2="314" y2="115"></line>
+    <line x1="300" y1="128" x2="290" y2="155"></line>
+    <line x1="290" y1="155" x2="282" y2="185"></line>
+    <line x1="300" y1="128" x2="312" y2="155"></line>
+    <line x1="312" y1="155" x2="320" y2="185"></line>
+  </g>
+  <circle cx="300" cy="120" r="3.5" fill="#ec3013"></circle>
+  <text x="300" y="112" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">long</text>
+</svg>

@@ -1,0 +1,137 @@
+import type { LeaderboardEntry, LeaderboardSnapshot } from './types';
+import type { MacroRegion } from './regions';
+
+function hashSeed(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+const CALLSIGNS = [
+  'Iron Dawn', 'Night Vector', 'Steel Horizon', 'Pacific Ghost', 'Atlas Run',
+  'Monsoon Six', 'Arctic Pulse', 'Desert Wind', 'Blue Anchor', 'Red Ledger',
+  'Echo Trail', 'Foxtrot Line', 'Grid Runner', 'Harbor Light', 'Indigo Wing',
+  'Jade Circuit', 'Keystone', 'Lunar Path', 'Meridian', 'North Star',
+  'Orbit Nine', 'Phantom Step', 'Quartz Field', 'Ridge Walker', 'Summit Zero',
+  'Tidal Forge', 'Umbra', 'Vanguard', 'Waypoint', 'Zenith',
+];
+
+const SQUADS = ['ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF', 'HOTEL'];
+
+const COUNTRIES: { code: string; name: string; region: MacroRegion }[] = [
+  { code: 'US', name: 'United States', region: 'Americas' },
+  { code: 'BR', name: 'Brazil', region: 'Americas' },
+  { code: 'MX', name: 'Mexico', region: 'Americas' },
+  { code: 'CA', name: 'Canada', region: 'Americas' },
+  { code: 'GB', name: 'United Kingdom', region: 'Europe' },
+  { code: 'DE', name: 'Germany', region: 'Europe' },
+  { code: 'FR', name: 'France', region: 'Europe' },
+  { code: 'IT', name: 'Italy', region: 'Europe' },
+  { code: 'ES', name: 'Spain', region: 'Europe' },
+  { code: 'RU', name: 'Russia', region: 'Europe' },
+  { code: 'JP', name: 'Japan', region: 'Asia-Pacific' },
+  { code: 'KR', name: 'South Korea', region: 'Asia-Pacific' },
+  { code: 'IN', name: 'India', region: 'Asia-Pacific' },
+  { code: 'AU', name: 'Australia', region: 'Asia-Pacific' },
+  { code: 'SG', name: 'Singapore', region: 'Asia-Pacific' },
+  { code: 'AE', name: 'UAE', region: 'Middle East & Africa' },
+  { code: 'ZA', name: 'South Africa', region: 'Middle East & Africa' },
+  { code: 'NG', name: 'Nigeria', region: 'Middle East & Africa' },
+];
+
+function pick<T>(arr: T[], seed: number): T {
+  return arr[seed % arr.length];
+}
+
+/** Pacers are synthetic pace-setter entries (clearly labeled bots) that keep
+ * early boards motivating before the real population fills in.
+ * Kill switch: NEXT_PUBLIC_LEADERBOARD_PACERS=false removes them entirely. */
+export function pacersEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_LEADERBOARD_PACERS !== 'false';
+}
+
+export function buildDemoPopulation(count = 96): LeaderboardSnapshot[] {
+  if (!pacersEnabled()) return [];
+
+  const out: LeaderboardSnapshot[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const seed = hashSeed(`mw-demo-${i}`);
+    const country = pick(COUNTRIES, seed);
+    const callsign = pick(CALLSIGNS, seed + i * 7);
+    const squadCode = pick(SQUADS, seed >> 2);
+
+    out.push({
+      operatorName: callsign,
+      missionScore: 28 + (seed % 72),
+      trainingStreak: Math.min(21, (seed >> 3) % 14),
+      weeklyVolume: 800 + (seed % 9200),
+      fuelDays: (seed >> 4) % 8,
+      nightSessions: (seed >> 5) % 12,
+      dawnSessions: (seed >> 6) % 10,
+      pftScore: 25 + (seed % 76),
+      pftTier: seed % 4 === 0 ? 'presidential' : seed % 3 === 0 ? 'national' : 'participant',
+      squadCode,
+      region: country.region,
+      countryCode: country.code,
+      countryName: country.name,
+      locale: 'en',
+    });
+  }
+
+  // Featured leaders for themed boards
+  out[0] = { ...out[0], operatorName: 'Night Vector', nightSessions: 14, missionScore: 88 };
+  out[1] = { ...out[1], operatorName: 'First Light', dawnSessions: 12, missionScore: 85 };
+  out[2] = { ...out[2], operatorName: 'Presidential Eagle', pftScore: 100, pftTier: 'presidential' };
+
+  return out;
+}
+
+export function snapshotToEntry(
+  snap: LeaderboardSnapshot,
+  boardId: import('./types').LeaderboardBoardId,
+  opts?: { isYou?: boolean; isPacer?: boolean; id?: string; delta?: number }
+): LeaderboardEntry {
+  const score = (() => {
+    switch (boardId) {
+      case 'mission-score':
+        return snap.missionScore;
+      case 'training-streak':
+        return snap.trainingStreak;
+      case 'weekly-volume':
+        return snap.weeklyVolume;
+      case 'fuel-days':
+        return snap.fuelDays;
+      case 'presidential-fitness':
+        return snap.pftScore;
+      case 'under-the-stars':
+        return snap.nightSessions;
+      case 'dawns-early-light':
+        return snap.dawnSessions;
+    }
+  })();
+
+  return {
+    id: opts?.id ?? snap.userId ?? `demo-${snap.operatorName}`,
+    operatorName: snap.operatorName,
+    score,
+    region: snap.region,
+    countryCode: snap.countryCode,
+    countryName: snap.countryName,
+    locale: snap.locale,
+    squadCode: snap.squadCode,
+    isYou: opts?.isYou,
+    isPacer: opts?.isPacer,
+    delta: opts?.delta,
+    userId: snap.userId,
+    detail: snap.countryName,
+  };
+}
+
+export function demoEntriesForBoard(
+  boardId: import('./types').LeaderboardBoardId
+): LeaderboardEntry[] {
+  return buildDemoPopulation().map((s, i) =>
+    snapshotToEntry(s, boardId, { id: `demo-${i}`, isPacer: true })
+  );
+}

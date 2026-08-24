@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "친구 초대",
+  "growthReferralDesc": "코드를 공유하세요. 누군가 이 코드로 무료 경로를 시작하면 미션이 커집니다. 인정만 — 아직 유료 보상 없음.",
+  "growthReferralInvite": "친구 초대",
+  "growthReferralCode": "내 코드",
+  "growthReferralCount": "{{count}}명 모집",
+  "growthReferralSignIn": "로그인",
+  "growthReferralSignInHint": "로그인하면 초대 코드를 받아 미션을 공유할 수 있습니다.",
+  "growthRecognition3": "리크루터",
+  "growthRecognition10": "필드 리크루터",
+  "growthRecognition25": "미션 리크루터",
+  "growthShareCopied": "링크 복사됨",
+  "growthShareFailed": "공유 실패"
+}

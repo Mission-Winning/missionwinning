@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "मित्र को आमंत्रित करें",
+  "growthReferralDesc": "Share your code. When someone starts their free path with it, you both grow the mission. Recognition only — no paid rewards yet.",
+  "growthReferralInvite": "मित्र को आमंत्रित करें",
+  "growthReferralCode": "आपका कोड",
+  "growthReferralCount": "{{count}} आमंत्रित",
+  "growthReferralSignIn": "साइन इन",
+  "growthReferralSignInHint": "Sign in to get your invite code and share the mission.",
+  "growthRecognition3": "Recruiter",
+  "growthRecognition10": "Field Recruiter",
+  "growthRecognition25": "Mission Recruiter",
+  "growthShareCopied": "लिंक कॉपी हुआ",
+  "growthShareFailed": "Could not share"
+}

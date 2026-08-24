@@ -1,0 +1,708 @@
+{
+  "version": 1,
+  "updated": "2026-08-13",
+  "assets": [
+    {
+      "id": "push-ups",
+      "kind": "form",
+      "path": "/form/push-ups/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": ".736 recast still set (cast a–d); still-only until loop recast. Legacy side.mp4 not wired."
+    },
+    {
+      "id": "air-squat",
+      "kind": "form",
+      "path": "/form/air-squat/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.465)"
+    },
+    {
+      "id": "squats",
+      "kind": "form",
+      "path": "/form/squats/cast-a.webp",
+      "status": "shipped",
+      "promptId": "form-cast-v1",
+      "notes": ".736 multicultural still set (catalog 006). Cast a–d; picker formCast.ts. Looks include East Asian, modest hijab (served-country athlete), Jewish/Israeli kippah+tzitzit. Representation ≠ service territory. SVG fallback remains /form-guides/squats.svg."
+    },
+    {
+      "id": "deadlift",
+      "kind": "form",
+      "path": "/form/deadlift/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "pull-ups",
+      "kind": "form",
+      "path": "/form/pull-ups/side.webp",
+      "status": "shipped",
+      "promptId": "form-cast-v1",
+      "notes": ".736 recast still set (cast a–d); still-only until loop recast."
+    },
+    {
+      "id": "plank",
+      "kind": "form",
+      "path": "/form/plank/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.465)"
+    },
+    {
+      "id": "glute-bridge",
+      "kind": "form",
+      "path": "/form/glute-bridge/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "lunges",
+      "kind": "form",
+      "path": "/form/lunges/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "overhead-press",
+      "kind": "form",
+      "path": "/form/overhead-press/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "barbell-row",
+      "kind": "form",
+      "path": "/form/barbell-row/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "burpees",
+      "kind": "form",
+      "path": "/form/burpees/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "inverted-row",
+      "kind": "form",
+      "path": "/form-guides/inverted-row.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1"
+    },
+    {
+      "id": "bench-press",
+      "kind": "form",
+      "path": "/form/bench-press/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.465)"
+    },
+    {
+      "id": "romanian-deadlift",
+      "kind": "form",
+      "path": "/form/romanian-deadlift/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.465)"
+    },
+    {
+      "id": "hip-thrust",
+      "kind": "form",
+      "path": "/form-guides/hip-thrust.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1"
+    },
+    {
+      "id": "hero-field",
+      "kind": "art",
+      "path": "/art/hero-field",
+      "status": "shipped",
+      "notes": "Landing hero AVIF+WebP pair"
+    },
+    {
+      "id": "topo-brass",
+      "kind": "art",
+      "path": "/art/topo-brass",
+      "status": "shipped"
+    },
+    {
+      "id": "arc-momentum",
+      "kind": "art",
+      "path": "/art/arc-momentum",
+      "status": "shipped"
+    },
+    {
+      "id": "bundle-brass",
+      "kind": "art",
+      "path": "/art/bundle-brass",
+      "status": "shipped"
+    },
+    {
+      "id": "lat-pulldown",
+      "kind": "form",
+      "path": "/form-guides/lat-pulldown.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch"
+    },
+    {
+      "id": "kettlebell-swing",
+      "kind": "form",
+      "path": "/form/kettlebell-swing/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.465)"
+    },
+    {
+      "id": "face-pull",
+      "kind": "form",
+      "path": "/form-guides/face-pull.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "bicep-curl",
+      "kind": "form",
+      "path": "/form-guides/bicep-curl.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "tricep-pushdown",
+      "kind": "form",
+      "path": "/form-guides/tricep-pushdown.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch"
+    },
+    {
+      "id": "bird-dog",
+      "kind": "form",
+      "path": "/form-guides/bird-dog.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "wall-sit",
+      "kind": "form",
+      "path": "/form-guides/wall-sit.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch"
+    },
+    {
+      "id": "pike-pushup",
+      "kind": "form",
+      "path": "/form-guides/pike-pushup.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "side-plank",
+      "kind": "form",
+      "path": "/form-guides/side-plank.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "mountain-climbers",
+      "kind": "form",
+      "path": "/form-guides/mountain-climbers.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "dips-chair",
+      "kind": "form",
+      "path": "/form-guides/dips-chair.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "step-ups",
+      "kind": "form",
+      "path": "/form-guides/step-ups.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "front-squat",
+      "kind": "form",
+      "path": "/form/front-squat/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "goblet-squat",
+      "kind": "form",
+      "path": "/form-guides/goblet-squat.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "jump-squats",
+      "kind": "form",
+      "path": "/form-guides/jump-squats.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "Expansion batch; T0 craft de-clone (.413) via form-kit"
+    },
+    {
+      "id": "human-performance",
+      "kind": "learn",
+      "path": "/learn/human-performance-hero.webp",
+      "status": "shipped",
+      "promptId": "brand-raster-v1",
+      "notes": "Chapter 1 hero"
+    },
+    {
+      "id": "movement-mechanics",
+      "kind": "learn",
+      "path": "/learn/movement-mechanics-hero.webp",
+      "status": "shipped",
+      "promptId": "brand-raster-v1",
+      "notes": "Chapter 2 hero"
+    },
+    {
+      "id": "programming-tuning",
+      "kind": "learn",
+      "path": "/learn/programming-tuning-hero.webp",
+      "status": "shipped",
+      "promptId": "brand-raster-v1",
+      "notes": "Chapter 3 hero"
+    },
+    {
+      "id": "getting-started-mw",
+      "kind": "learn",
+      "path": "/learn/getting-started-mw-hero.webp",
+      "status": "shipped",
+      "promptId": "brand-raster-v1",
+      "notes": "Chapter 4 hero \u2014 v1.4.1"
+    },
+    {
+      "id": "nutrition-recovery",
+      "kind": "learn",
+      "path": "/learn/nutrition-recovery-hero.webp",
+      "status": "shipped",
+      "promptId": "brand-raster-v1",
+      "notes": "Chapter 5 hero"
+    },
+    {
+      "id": "assessments-progress",
+      "kind": "learn",
+      "path": "/learn/assessments-progress-hero.webp",
+      "status": "shipped",
+      "promptId": "brand-raster-v1",
+      "notes": "Chapter 6 hero"
+    },
+    {
+      "id": "invite-square",
+      "kind": "social",
+      "path": "/social/invite-square.webp",
+      "status": "shipped",
+      "promptId": "grok-social-invite",
+      "notes": "Grok Imagine 2026-08-04 \u2014 kettlebell + chalk outdoor square; paper/ink/one-red (.463)"
+    },
+    {
+      "id": "coach-story",
+      "kind": "social",
+      "path": "/social/coach-story.webp",
+      "status": "shipped",
+      "promptId": "grok-social-coach",
+      "notes": "Grok Imagine 2026-08-04 \u2014 progressive-load arcs 9:16 story canvas; overlay copy in editor (.463)"
+    },
+    {
+      "id": "kalligator-idle",
+      "kind": "mascot",
+      "path": "/brand/mascot/kalligator-idle.webp",
+      "status": "shipped",
+      "promptId": "grok-mascot-idle",
+      "notes": "Grok Imagine 2026-08-04 \u2014 geometric crocodile idle; paper/ink/red eye (.463)"
+    },
+    {
+      "id": "kalligator-invite",
+      "kind": "mascot",
+      "path": "/brand/mascot/kalligator-invite.webp",
+      "status": "shipped",
+      "promptId": "grok-mascot-invite",
+      "notes": "Grok Imagine 2026-08-04 \u2014 open-wing beckon; matches idle proportions (.463)"
+    },
+    {
+      "id": "kalligator-celebrate",
+      "kind": "mascot",
+      "path": "/brand/mascot/kalligator-celebrate.webp",
+      "status": "shipped",
+      "promptId": "grok-mascot-celebrate",
+      "notes": "Grok Imagine 2026-08-04 \u2014 wings lift + thin red rim; set-locked energy (.463)"
+    },
+    {
+      "id": "kalligator-mark",
+      "kind": "mascot",
+      "path": "/brand/mascot/kalligator-mark.svg",
+      "status": "shipped",
+      "promptId": "flow-mascot-mark",
+      "notes": "Hand SVG tiny mark \u2014 not logo replacement"
+    },
+    {
+      "id": "dead-bug",
+      "kind": "form",
+      "path": "/form-guides/dead-bug.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "thruster",
+      "kind": "form",
+      "path": "/form/thruster/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.465)"
+    },
+    {
+      "id": "cable-row",
+      "kind": "form",
+      "path": "/form-guides/cable-row.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "lateral-raise",
+      "kind": "form",
+      "path": "/form-guides/lateral-raise.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "hanging-leg-raise",
+      "kind": "form",
+      "path": "/form-guides/hanging-leg-raise.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "box-jump",
+      "kind": "form",
+      "path": "/form/box-jump/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-side",
+      "notes": "Form Index clinical side still + loop (.466)"
+    },
+    {
+      "id": "skull-crusher",
+      "kind": "form",
+      "path": "/form-guides/skull-crusher.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "calf-raise",
+      "kind": "form",
+      "path": "/form-guides/calf-raise.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "leg-press",
+      "kind": "form",
+      "path": "/form-guides/leg-press.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "band-pull-apart",
+      "kind": "form",
+      "path": "/form-guides/band-pull-apart.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "superman",
+      "kind": "form",
+      "path": "/form-guides/superman.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "negative-pullup",
+      "kind": "form",
+      "path": "/form-guides/negative-pullup.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "crunches",
+      "kind": "form",
+      "path": "/form-guides/crunches.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "cat-camel",
+      "kind": "form",
+      "path": "/form-guides/cat-camel.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "couch-stretch",
+      "kind": "form",
+      "path": "/form-guides/couch-stretch.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "bear-crawl",
+      "kind": "form",
+      "path": "/form-guides/bear-crawl.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "inchworm",
+      "kind": "form",
+      "path": "/form-guides/inchworm.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "single-leg-glute",
+      "kind": "form",
+      "path": "/form-guides/single-leg-glute.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "wall-angels",
+      "kind": "form",
+      "path": "/form-guides/wall-angels.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "thread-needle",
+      "kind": "form",
+      "path": "/form-guides/thread-needle.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "frog-pose",
+      "kind": "form",
+      "path": "/form-guides/frog-pose.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "sled-push",
+      "kind": "form",
+      "path": "/form-guides/sled-push.svg",
+      "status": "shipped",
+      "promptId": "form-instructional-v1",
+      "notes": "T1 structured-guide media (.414) via form-kit"
+    },
+    {
+      "id": "said-principle",
+      "kind": "learn",
+      "path": "/learn/said-principle.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "energy-systems",
+      "kind": "learn",
+      "path": "/learn/energy-systems.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "recovery-stimulus",
+      "kind": "learn",
+      "path": "/learn/recovery-stimulus.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "progressive-overload",
+      "kind": "learn",
+      "path": "/learn/progressive-overload.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "deload-signal",
+      "kind": "learn",
+      "path": "/learn/deload-signal.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "first-session",
+      "kind": "learn",
+      "path": "/learn/first-session.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "protein-briefing",
+      "kind": "learn",
+      "path": "/learn/protein-briefing.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "retest-cadence",
+      "kind": "learn",
+      "path": "/learn/retest-cadence.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.414)"
+    },
+    {
+      "id": "pattern-squat",
+      "kind": "form",
+      "path": "/form/pattern-squat/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-pattern",
+      "notes": "Form Index shared pattern still for long-tail (.466)"
+    },
+    {
+      "id": "pattern-hinge",
+      "kind": "form",
+      "path": "/form/pattern-hinge/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-pattern",
+      "notes": "Form Index shared pattern still for long-tail (.466)"
+    },
+    {
+      "id": "pattern-push",
+      "kind": "form",
+      "path": "/form/pattern-push/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-pattern",
+      "notes": "Form Index shared pattern still for long-tail (.466)"
+    },
+    {
+      "id": "pattern-pull",
+      "kind": "form",
+      "path": "/form/pattern-pull/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-pattern",
+      "notes": "Form Index shared pattern still for long-tail (.466)"
+    },
+    {
+      "id": "pattern-core",
+      "kind": "form",
+      "path": "/form/pattern-core/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-pattern",
+      "notes": "Form Index shared pattern still for long-tail (.466)"
+    },
+    {
+      "id": "pattern-loco",
+      "kind": "form",
+      "path": "/form/pattern-loco/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-pattern",
+      "notes": "Form Index shared pattern still for long-tail (.466)"
+    },
+    {
+      "id": "pattern-isolation",
+      "kind": "form",
+      "path": "/form/pattern-isolation/side.webp",
+      "status": "shipped",
+      "promptId": "grok-form-index-pattern",
+      "notes": "Form Index shared pattern still for long-tail (.466)"
+    },
+    {
+      "id": "six-pillars",
+      "kind": "learn",
+      "path": "/learn/six-pillars.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.415)"
+    },
+    {
+      "id": "win-score-offline",
+      "kind": "learn",
+      "path": "/learn/win-score-offline.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.415)"
+    },
+    {
+      "id": "meal-timing",
+      "kind": "learn",
+      "path": "/learn/meal-timing.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.415)"
+    },
+    {
+      "id": "parq-screen",
+      "kind": "learn",
+      "path": "/learn/parq-screen.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.415)"
+    },
+    {
+      "id": "adjust-plan",
+      "kind": "learn",
+      "path": "/learn/adjust-plan.webp",
+      "status": "shipped",
+      "promptId": "brand-diagram-v1",
+      "notes": "Section figure SVG\u2192WebP (.415)"
+    },
+    {
+      "id": "beyond-the-basics-pdf",
+      "kind": "learn",
+      "path": "/magazine/beyond-the-basics.pdf",
+      "status": "shipped",
+      "notes": "Rebuilt .416 with section densify (~27 pages)"
+    }
+  ]
+}

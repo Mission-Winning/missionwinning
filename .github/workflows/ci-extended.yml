@@ -1,0 +1,421 @@
+# Extended CI — manual / weekly only (minutes-heavy).
+# Default gate is .github/workflows/ci.yml (lint · typecheck · tests · build).
+name: CI extended
+
+on:
+  workflow_dispatch:
+    inputs:
+      bootstrap_baselines:
+        description: >-
+          Generate visual baselines instead of checking against them. Download
+          the visual-diffs artifact and LOOK at every PNG before committing.
+        type: boolean
+        default: false
+  schedule:
+    # Weekly Android + critical e2e (UTC Monday 08:17)
+    - cron: '17 8 * * 1'
+
+concurrency:
+  group: ci-extended-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-critical:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # `.255` — this block must match `scripts/gate.mjs`'s `BUILD_ENV` and
+    # `ci.yml`'s. Asserted in `src/lib/workflowBuildEnv.test.ts`; the VAPID
+    # placeholder's reasoning is in `ci.yml`, which is where it was proved.
+    env:
+      PRIVATE_MODE: 'false'
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      # `e2e:critical` is a superset of the `@gate` specs, so it needs the same
+      # placeholder for the same reason — rationale at the matching line in ci.yml.
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install chromium
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start server
+        run: |
+          npm run start &
+          for i in $(seq 1 45); do
+            curl -sf http://127.0.0.1:3000/log >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:3000/log >/dev/null || (echo "Server failed to start" && exit 1)
+
+      - name: Critical path E2E
+        env:
+          SMOKE_BASE_URL: http://127.0.0.1:3000
+        run: npm run e2e:critical
+
+  lighthouse-budget:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    continue-on-error: true
+    # `.255` — this job had **no env at all**, and that is not cosmetic.
+    #
+    # `isPrivateModeEnabled()` defaults to *on* whenever `NODE_ENV=production`
+    # and `PRIVATE_MODE` is unset (`src/lib/privateGate.ts:23`), and `next
+    # build` / `next start` both set `NODE_ENV=production`. So this job built
+    # and served the **gated** app, and `scripts/lighthouse-budget.mjs:9`
+    # measures `['/', '/log', '/guide/human-performance', '/exercises/squats']`.
+    # `/` and `/log` are not in `PRIVATE_GATE_PUBLIC_PATHS`, so both redirected
+    # to `/private` — half this budget has been scoring the teaser page, which
+    # is the lightest page in the product. A performance budget that measures a
+    # near-empty page is `.200`'s check that cannot fail, wearing a stopwatch.
+    env:
+      PRIVATE_MODE: 'false'
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start production server
+        run: |
+          npm run build
+          npm run start &
+          # `/api/health` rather than `/private`: it is public in **both** gate
+          # modes (`PUBLIC_API_PATHS_WHILE_GATED`), so this readiness loop no
+          # longer quietly depends on the gate being up — which is the thing
+          # the env block above just turned off.
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/health >/dev/null && break
+            sleep 2
+          done
+
+      - name: Install Lighthouse
+        run: npm i -D lighthouse chrome-launcher
+
+      - name: Lighthouse budget (soft warning)
+        env:
+          SMOKE_BASE_URL: http://localhost:3000
+        run: node scripts/lighthouse-budget.mjs
+
+  visual-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    continue-on-error: true
+    # `.255` — `PRIVATE_MODE: 'false'` was set on the **assertion** step, which
+    # runs after the build and after the server started. Step env does not
+    # reach earlier steps, so it reached neither: this job built and served the
+    # gated app and then took screenshots of it.
+    #
+    # `/` is not in `PRIVATE_GATE_PUBLIC_PATHS`, so `home-reduced.png` — the
+    # case `visual.spec.ts` celebrates as covering the most-linked page in the
+    # product for the first time — was a picture of `/private`. `/guide` and
+    # `/exercises` are public prefixes and were genuinely themselves.
+    #
+    # That is precisely the failure the file's own header warns about: *"a
+    # baseline whose name and contents disagree is worse than no baseline"*.
+    # The `/bundle` case caught its own version of this by checking the landing
+    # URL; nothing else did. `visual.spec.ts` now checks all four.
+    env:
+      PRIVATE_MODE: 'false'
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Build + start server
+        run: |
+          npm run build
+          npm run start &
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:3000/api/health >/dev/null && break
+            sleep 2
+          done
+
+      # `.200` — this job used to pass while guarding nothing.
+      #
+      # With no baselines it ran `--update-snapshots || true` and then re-ran
+      # `e2e:visual`, which found the snapshots it had just written. Green, every
+      # time, on a suite with zero committed baselines. That is the same defect
+      # this repo keeps finding in its own tests: a check that cannot fail.
+      #
+      # Bootstrapping baselines is a deliberate act — `visual.spec.ts` argues at
+      # length that a known-wrong baseline is worse than none, and the previous
+      # set was deleted for depicting the pre-Modernist design. So the absence of
+      # baselines is now a loud failure with instructions, not a silent pass.
+      #
+      # `.254` — that failure told you to run a command, and there was **no way
+      # to run it**. This job is the only Linux/Chromium environment this project
+      # has; baselines generated anywhere else differ by font hinting and
+      # antialiasing alone, which is how the pixel comparison stops meaning
+      # anything. So the instructions named a command nobody could execute, and
+      # the suite has had zero baselines ever since — `home-reduced.png` has
+      # never had one at all, so `/`, the most-linked page in the product, has
+      # been silently self-approving on every run since the case was written.
+      #
+      # `bootstrap_baselines` is a named, opt-in `workflow_dispatch` input rather
+      # than a shell flag or an auto-fallback, and it defaults **false**: the
+      # normal path stays a loud failure, and generating baselines stays a thing
+      # a person decides to do. It is deliberately not wired to the schedule —
+      # a weekly run that regenerates its own baselines is `.200`'s check that
+      # cannot fail, rebuilt.
+      #
+      # The generate does not assert. It writes the PNGs, the step below uploads
+      # them, and the actual gate is a human opening every file. `.221` deleted
+      # the previous baselines rather than refresh them precisely because *"the
+      # obvious response to four huge visual diffs is `--update-snapshots`
+      # without looking, which launders whatever the app happens to render that
+      # day into the new truth."* Committing unreviewed output is that same
+      # failure arriving through the front door.
+      #
+      # `PRIVATE_MODE` used to be repeated here. It is on the job now — see the
+      # note there. Leaving it in both places would suggest this step is where
+      # it matters, and this step is exactly where it does *not*.
+      - name: Visual regression (@visual)
+        env:
+          SMOKE_BASE_URL: http://localhost:3000
+        run: |
+          if [ "${{ inputs.bootstrap_baselines }}" = "true" ]; then
+            echo "::notice::Generating visual baselines. Nothing is asserted here."
+            echo "Download the visual-diffs artifact, LOOK at every PNG, then commit."
+            npx playwright test --config=playwright.config.ts --grep @visual --update-snapshots
+            find tests/e2e -name '*.png' -path '*-snapshots*' -print
+            exit 0
+          fi
+          if [ -z "$(find tests/e2e -type d -name '*-snapshots' 2>/dev/null | head -1)" ]; then
+            echo "::error::No committed visual baselines — this job is guarding nothing."
+            echo ""
+            echo "Bootstrap them deliberately: re-run this workflow from the Actions tab"
+            echo "with the 'bootstrap_baselines' input set to true, then download the"
+            echo "visual-diffs artifact and LOOK at every PNG before committing."
+            echo "See tests/e2e/visual.spec.ts."
+            exit 1
+          fi
+          npm run e2e:visual
+
+      # `always()`, not `failure()`, and that is the whole point of this step.
+      # The bootstrap path above generates baselines and then exits 0, so under
+      # `failure()` the artifact would never upload and the baselines would die
+      # with the runner — the instruction one step up could never be followed.
+      # Verified against run 30263001081 (2026-07-27): visual-regression
+      # succeeded, "Upload visual diffs" skipped, nothing retrievable.
+      #
+      # `.254` rewrote *why* that path passes — it used to be a soft `|| true`
+      # plus a re-run that found the snapshots it had just written (`.200`'s
+      # check that cannot fail), and is now an explicit opt-in that asserts
+      # nothing on purpose. `always()` matters for the same reason either way,
+      # so the condition stands and only its justification changed.
+      - name: Upload visual baselines + diffs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: visual-diffs
+          path: |
+            test-results/
+            tests/e2e/**/*-snapshots/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  gate-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Remote security / gate smoke
+        env:
+          SMOKE_BASE_URL: ${{ secrets.SMOKE_BASE_URL }}
+          SMOKE_ACCESS_SECRET: ${{ secrets.SMOKE_ACCESS_SECRET }}
+        run: |
+          if [ -z "$SMOKE_BASE_URL" ]; then
+            echo "Skipping security-smoke (SMOKE_BASE_URL not set)"
+            exit 0
+          fi
+          npm run security-smoke
+
+  growth-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Remote growth smoke
+        env:
+          SMOKE_BASE_URL: ${{ secrets.SMOKE_BASE_URL }}
+          SMOKE_ACCESS_SECRET: ${{ secrets.SMOKE_ACCESS_SECRET }}
+        run: |
+          if [ -z "$SMOKE_BASE_URL" ]; then
+            echo "Skipping growth-smoke (SMOKE_BASE_URL not set)"
+            exit 0
+          fi
+          npm run growth-smoke
+
+  rate-limit-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Remote rate-limit smoke
+        env:
+          SMOKE_BASE_URL: ${{ secrets.SMOKE_BASE_URL }}
+        run: |
+          if [ -z "$SMOKE_BASE_URL" ]; then
+            echo "Skipping rate-limit-smoke (SMOKE_BASE_URL not set)"
+            exit 0
+          fi
+          set +e
+          npm run rate-limit-smoke
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "rate-limit-smoke OK (429 seen)"
+            exit 0
+          fi
+          if [ "$code" -eq 2 ]; then
+            echo "::warning::No 429 — Production likely missing UPSTASH_REDIS_REST_* (Wave A). See docs/PRODUCTION_STACK.md L9."
+            exit 0
+          fi
+          echo "rate-limit-smoke hard failure (exit $code)"
+          exit "$code"
+
+  android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Install platform + build-tools
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Assemble debug + all-module unit tests
+        run: |
+          ./gradlew :app:assembleDebug testDebugUnitTest --stacktrace
+
+      - name: Release packaging smoke (debug-signed)
+        run: |
+          ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
+          test -f app/build/outputs/apk/release/app-release.apk
+          test -f app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload release AAB (debug-signed)
+        if: success()
+        uses: actions/upload-artifact@v5
+        with:
+          name: app-release-aab
+          path: apps/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Room schema present (exportSchema discipline)
+        run: |
+          test -d core/data/schemas
+          test -n "$(find core/data/schemas -name '*.json' | head -1)"
+
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v5
+        with:
+          name: app-debug
+          path: apps/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Maestro wedge present
+        run: |
+          test -f .maestro/wedge.yaml
+          grep -q 'Start workout' .maestro/wedge.yaml
+          grep -q 'Complete set' .maestro/wedge.yaml
+          grep -q 'Session locked' .maestro/wedge.yaml
+          grep -q 'Account' .maestro/wedge.yaml
+          grep -q 'Preferences' .maestro/wedge.yaml
+          grep -q 'assertNotVisible' .maestro/wedge.yaml
+          grep -q 'Account tab' scripts/wedge-adb-walk.py
+          grep -q 'assert_absent' scripts/wedge-adb-walk.py
+          test -x scripts/release-smoke.sh
+
+      - name: Auth scaffold + Baseline Profile stub
+        run: |
+          ./gradlew :feature:auth:assembleDebug :benchmark:assemble --stacktrace
+
+      - name: Logger + sync invariant modules (explicit)
+        run: |
+          ./gradlew :feature:active:testDebugUnitTest :core:model:testDebugUnitTest :core:data:testDebugUnitTest :core:common:testDebugUnitTest --stacktrace

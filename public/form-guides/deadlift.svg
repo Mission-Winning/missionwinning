@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none" role="img" aria-label="Deadlift: setup, pull, lockout">
+  <style>
+    /* Hero form motion — only when the athlete allows motion. */
+    @media (prefers-reduced-motion: no-preference) {
+      .form-phase-mid {
+        animation: form-mid-bob 2s ease-in-out infinite;
+        transform-box: fill-box;
+        transform-origin: center bottom;
+      }
+      .form-cue-pulse {
+        animation: form-cue-pulse 2s ease-in-out infinite;
+      }
+    }
+    @keyframes form-mid-bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+    @keyframes form-cue-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+  <title>Deadlift form diagram</title>
+  <rect width="360" height="220" fill="#f3f2f2"></rect>
+  <text x="60" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">SETUP</text>
+  <text x="180" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">PULL</text>
+  <text x="300" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">LOCKOUT</text>
+  <line x1="20" y1="185" x2="100" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="140" y1="185" x2="220" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="260" y1="185" x2="340" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="92.2" cy="77.2" r="9"></circle>
+    <line x1="92.2" y1="77.2" x2="86.2" y2="91.2"></line>
+    <line x1="86.2" y1="91.2" x2="60" y2="128"></line>
+    <line x1="86.2" y1="91.2" x2="84.2" y2="95.2"></line>
+    <line x1="84.2" y1="95.2" x2="94.2" y2="113.2"></line>
+    <line x1="94.2" y1="113.2" x2="64" y2="170"></line>
+    <line x1="84.2" y1="95.2" x2="98.2" y2="117.2"></line>
+    <line x1="98.2" y1="117.2" x2="74" y2="170"></line>
+    <line x1="60" y1="128" x2="50" y2="155"></line>
+    <line x1="50" y1="155" x2="42" y2="185"></line>
+    <line x1="60" y1="128" x2="72" y2="155"></line>
+    <line x1="72" y1="155" x2="80" y2="185"></line>
+  </g>
+  <line x1="42" y1="170" x2="86" y2="170" stroke="#201e1d" stroke-width="3" stroke-linecap="round"></line>
+  <circle class="form-cue-pulse" cx="60" cy="128" r="3.5" fill="#ec3013"></circle>
+  <text x="60" y="120" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">hips</text>
+  <g class="form-phase-mid" stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="202.4" cy="74.4" r="9"></circle>
+    <line x1="202.4" y1="74.4" x2="196.4" y2="88.4"></line>
+    <line x1="196.4" y1="88.4" x2="180" y2="128"></line>
+    <line x1="196.4" y1="88.4" x2="194.4" y2="92.4"></line>
+    <line x1="194.4" y1="92.4" x2="204.4" y2="110.4"></line>
+    <line x1="204.4" y1="110.4" x2="184" y2="145"></line>
+    <line x1="194.4" y1="92.4" x2="208.4" y2="114.4"></line>
+    <line x1="208.4" y1="114.4" x2="194" y2="145"></line>
+    <line x1="180" y1="128" x2="170" y2="155"></line>
+    <line x1="170" y1="155" x2="162" y2="185"></line>
+    <line x1="180" y1="128" x2="192" y2="155"></line>
+    <line x1="192" y1="155" x2="200" y2="185"></line>
+  </g>
+  <line x1="164" y1="145" x2="204" y2="145" stroke="#201e1d" stroke-width="3" stroke-linecap="round"></line>
+  <path class="form-cue-pulse" d="M210 165 L210 135" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon class="form-cue-pulse" points="210,135 214,143 206,143" fill="#ec3013"></polygon>
+  <text x="220" y="150" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="9">push floor</text>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="314" cy="72" r="9"></circle>
+    <line x1="314" y1="72" x2="308" y2="86"></line>
+    <line x1="308" y1="86" x2="300" y2="128"></line>
+    <line x1="308" y1="86" x2="306" y2="90"></line>
+    <line x1="306" y1="90" x2="316" y2="108"></line>
+    <line x1="316" y1="108" x2="304" y2="122"></line>
+    <line x1="306" y1="90" x2="320" y2="112"></line>
+    <line x1="320" y1="112" x2="314" y2="122"></line>
+    <line x1="300" y1="128" x2="290" y2="155"></line>
+    <line x1="290" y1="155" x2="282" y2="185"></line>
+    <line x1="300" y1="128" x2="312" y2="155"></line>
+    <line x1="312" y1="155" x2="320" y2="185"></line>
+  </g>
+  <line x1="278" y1="122" x2="322" y2="122" stroke="#201e1d" stroke-width="3" stroke-linecap="round"></line>
+  <circle class="form-cue-pulse" cx="300" cy="118" r="3.5" fill="#ec3013"></circle>
+  <text x="300" y="110" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">lock</text>
+</svg>

@@ -1,0 +1,75 @@
+# Secret scan — PR + manual only (lean; do not run on every master push).
+# Local gate while Actions billing is blocked: npm run secrets:scan
+# Docs: docs/SECRETS.md
+name: Gitleaks
+
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+# `.248` — least privilege, stated rather than inherited.
+#
+# Actions billing cleared on 2026-08-01 and gitleaks ran for the first time.
+# It did not report a secret: it **crashed with a 403** before scanning anything.
+#
+#   GET /repos/Snedz/missionwinning/pulls/178/commits  →  403
+#   'Resource not accessible by integration'
+#   'x-accepted-github-permissions': 'pull_requests=read'
+#
+# gitleaks-action@v2 lists the PR's commits to work out the scan range, and with
+# no `permissions:` block the job inherits the repository default — which grants
+# `contents` only. So the secret gate could never scan a pull request, and the
+# red it produced said nothing about whether the diff holds a secret.
+#
+# CONTEXT recorded the red as the known finding in commit 8ea3527a (a real
+# Solana treasury address, deliberately not allowlisted — founder call). That is
+# still true of `master`'s history, but it is **not** why this check is failing.
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: gitleaks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    # `.235` — the secret scanner crashed on the **first run of every pull
+    # request**, and had done for as long as there are runs to read.
+    #
+    #   RequestError [HttpError]: Resource not accessible by integration
+    #     at async Object.ScanPullRequest (…/gitleaks-action/v2/dist/index.js)
+    #     url: https://api.github.com/repos/Snedz/missionwinning/pulls/181/commits
+    #     status: 403
+    #     x-accepted-github-permissions: pull_requests=read
+    #
+    # Identical on #181 (run 30684203909) and #182 (run 30719575181), and the
+    # same first-run failure appears on `feat/locale-export-split` and
+    # `feat/a11y-settle`. On a `pull_request` event the action lists the PR's
+    # commits to scan only what the PR adds; this job declared no `permissions:`
+    # block, so it inherited the repository default, which does not include
+    # `pull_requests`.
+    #
+    # Every one of those failures went green on a later push and was left at
+    # that. That is the thing this repo keeps writing down: a check people
+    # re-run until it passes is a check they have stopped reading — and this
+    # one is the secret scanner, so the run being skipped is the run that scans
+    # a brand-new branch's first commits.
+    #
+    # Least privilege, stated rather than inherited: `contents: read` to check
+    # out, `pull-requests: read` for the call above. Nothing is written.
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml

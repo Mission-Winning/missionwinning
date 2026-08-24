@@ -1,0 +1,162 @@
+# Beta Invite Kit — Mission Winning
+
+Use this when inviting the first **10 private beta operators**. Prod is live at **https://www.missionwinning.com** (private gate on). Share the access code from Vercel `PRIVATE_ACCESS_SECRET` / `PRIVATE_ACCESS_CODES`.
+
+**Current status (2026-07-22):** www target **`.104`** (verify `/api/health` after deploy). **Recruiting is the critical path** before `PRIVATE_MODE=false` — cohort target **2026-08-02**. Demo film: `npm run seed-coach-adapt-demo` → [ACCELERATOR_SPRINT.md](ACCELERATOR_SPRINT.md).
+
+**Founder sprint checklist (agents cannot mark these done):**
+
+1. Verify www `/api/health` / Profile build label matches latest master after deploy (see [VERCEL_DEPLOY_CHECKLIST.md](VERCEL_DEPLOY_CHECKLIST.md) §1.3, §1.6 free-tier quota).
+2. **Unblock mail:** set `MAIL_POSTAL_ADDRESS` (CAN-SPAM footer) — without it invite email hard-exits ([LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md) § env).
+3. Apply pending Supabase migrations (runbook order) so `beta_invites` / panel progress exist.
+4. Phone hero QA: `/private` → access → `/welcome` → workout → Mission Score → sign-in. Note #1 confusion.
+5. Issue ≥10 invites via Profile → Beta panel (`/private?invite=MW-B-…` + access code out-of-band). Prefer personal DMs if email still blocked.
+6. Day-2 / day-7 follow-ups (scripts below).
+7. After web hero feels solid: Android [FOUNDER_ACCEPT.md](../apps/android/FOUNDER_ACCEPT.md) 15-min Accept B → Play Internal.
+8. Wave A: Sentry `NEXT_PUBLIC_SENTRY_DSN` · optional Aikido MCP permissions + `AIKIDO_SECRET_KEY`.
+
+**Order that unblocks A5 (users):** postal → migrations → first invite → phone QA feedback → more invites. Craft ships do not substitute for step 5.
+
+**Deferral:** Cohort of ≥10 invites still the public-flip gate (A5). Founder owns phone hero QA + personal invites; agents fix only #1 confusion from tester feedback and never invent traction.
+
+**Paid help:** Optional outreach VA — [docs/OUTREACH_VA_BRIEF.md](OUTREACH_VA_BRIEF.md). **Zero paid ads** until week-4 ([docs/PRELAUNCH_CAPITAL.md](PRELAUNCH_CAPITAL.md)).
+
+---
+
+## Invite link format (Wave 10 engine)
+
+**Preferred:** issue invites in-app — **Profile → Beta funnel → Invites** (requires `BETA_ADMIN_EMAILS`). Each invite gets a unique `MW-B-XXXXX` code and a full link:
+
+```
+https://www.missionwinning.com/private?invite=MW-B-XXXXX
+```
+
+- Link opens the private gate with invite attribution (`profiles.invited_via` + `beta_invites` funnel).
+- **Access code is shared separately** (email/DM). Production does **not** accept `?access=` in the URL unless you deliberately set `PRIVATE_ALLOW_QUERY_ACCESS=true` ([ENV.md](ENV.md), [PROTECTION.md](PROTECTION.md)).
+- When `?invite=` is present, `/private` expands the access-code form ("You're invited…").
+
+After the first successful gate entry, a 30-day cookie is set — they can bookmark `/beta` or `/log` without query params.
+
+**Fallback (no panel):** send them to `/private` and share the access code in the same message.
+
+**Optional (founder security tradeoff):** if `PRIVATE_ALLOW_QUERY_ACCESS=true`, issued links may also include `?access=…` for one-tap entry — do not enable casually (query leaks).
+
+**Copy source for day-2 / day-7 scripts:** still this file (below). Automated email uses the same wording when invite email is set and Resend is configured (`/api/cron/nudges`).
+
+---
+
+## Suggested email (copy/paste)
+
+**Subject:** You're invited — Mission Winning private beta
+
+Hi [Name],
+
+You're in the first cohort of **Mission Winning** — free offline workout logging (no account) plus **Mission Coach**: weekly plans that adapt from your logs alone (no wearable). Guided path: I-Day → first workout → Mission Coach.
+
+**Start here (2 minutes):**
+1. Open: `https://www.missionwinning.com/private?invite=MW-B-XXXXX` (or plain `/private`)
+2. Enter access code: `YOUR_CODE` (from this email / DM — not in the URL)
+3. Read the beta guide: `/beta`
+4. Complete **I-Day** at `/welcome`
+5. Log one workout from **Today**
+6. Open **Mission Coach** (`/coach`) after your first log — see how the week adapts
+7. Optional: sign in on **Profile** for cloud sync
+
+**What to try:**
+- Tap **Mission Winning** in the top header to open the menu (Move, Mind, Learn, etc.)
+- Language switch on Profile (Thai, Japanese, Spanish, etc.)
+- Optional read: **Beyond the Basics** magazine PDF — https://www.missionwinning.com/magazine/beyond-the-basics.pdf (or browse `/guide`)
+
+**Feedback:** Reply to this email or use in-app feedback. Confusing steps = exactly what we need to fix. Especially: did Coach feel useful after one workout?
+
+**Optional founder DM angle (not the email subject):** If someone cares about the “exercise as medicine” story, use the evidence script in [SOCIAL_LAUNCH.md](SOCIAL_LAUNCH.md) — keep the invite email on the logger + Coach wedge. Claim rules: [EXERCISE_AS_MEDICINE.md](EXERCISE_AS_MEDICINE.md).
+
+Thanks for helping us ship health for everyone.
+
+— Mission Winning team
+
+---
+
+## Founder checklist (per invite)
+
+| Step | Done |
+|------|------|
+| Access code shared securely (not in public repo) | ⬜ |
+| Tester completed I-Day | ⬜ |
+| Tester logged ≥1 workout | ⬜ |
+| Tester opened Mission Coach after first log | ⬜ |
+| Tester signed in (optional) | ⬜ |
+| Feedback captured | ⬜ |
+
+---
+
+## Measuring funnel
+
+1. **Supabase** — `profiles` row count (signed-in users)
+2. **Profile → Beta journey progress** (if `BETA_ADMIN_EMAILS` includes your email)
+3. **`journey_events`** — `journey_phase_complete`, `journey_commissioned`
+
+Launch gates (from [PRE_LAUNCH_PLAN.md](archive/PRE_LAUNCH_PLAN.md)): ≥10 users, I-Day ≥80%, Basic Training ≥60% before `PRIVATE_MODE=false`.
+
+---
+
+## Day-2 and day-7 follow-ups (copy/paste)
+
+**Day 2**
+
+```
+Hey [Name] — did you get a workout logged in Mission Winning?
+
+What almost stopped you (confusing screen, too many steps, something else)?
+```
+
+**Day 7**
+
+```
+Quick check-in: are you still opening the app this week?
+
+One thing you'd change about the first 3 minutes?
+```
+
+After each reply: fix the #1 confusion within 48h if it's a real bug/UX issue, then reply “fixed — try again?”
+
+---
+
+## Invite tracker (first 10)
+
+**Use the in-app Invites panel** (Profile → Beta funnel → Invites) for live status chips: landed · signed up · I-Day · workout · day-2/7 sent. Totals vs the ≥10 signed-up gate are shown there.
+
+Migration: `supabase/migrations/20260721_beta_invites.sql`. Dry-run follow-ups:
+
+```bash
+curl -sH "Authorization: Bearer $CRON_SECRET" \
+  "$SMOKE_BASE_URL/api/cron/nudges?dryRun=1" | jq '.inviteFollowups'
+```
+
+Watch for A1 signal: “is there an app?” / won’t install PWA — log in invite notes or tester feedback ([REDTEAM.md](REDTEAM.md)).
+
+Social/recruiting angle: [docs/SOCIAL_LAUNCH.md](SOCIAL_LAUNCH.md).
+
+---
+
+## Supabase migrations (if tester hits errors)
+
+Run in SQL Editor (idempotent):
+
+1. `supabase/migrations/20250629_complete_base_schema.sql` — if tables missing
+2. `supabase/migrations/20250629_journey_state.sql`
+3. `supabase/migrations/20250629_journey_events.sql`
+4. `supabase/migrations/20250629_leaderboard_squad_patch.sql` — fixes `squad_code` column error
+
+---
+
+## Pages to reference
+
+| URL | Purpose |
+|-----|---------|
+| `/beta` | This guide (public during private mode) |
+| `/private` | Access code gate |
+| `/welcome` | I-Day onboarding |
+| `/log` | Today hub |
+| `/coach` | Mission Coach (after first log) |
+| `/profile` | Sign in, language, journey edit |

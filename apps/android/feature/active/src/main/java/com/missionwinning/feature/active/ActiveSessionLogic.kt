@@ -1,0 +1,318 @@
+package com.missionwinning.feature.active
+
+import com.missionwinning.core.model.ActiveExercise
+import com.missionwinning.core.model.LoggedSet
+import com.missionwinning.core.model.SetKind
+
+/**
+ * Pure helpers for Active logger — unit-tested without Android runtime.
+ */
+object ActiveSessionLogic {
+    const val MAX_SETS_PER_EXERCISE = 12
+    const val DEFAULT_REST_SECONDS = 60
+    const val REST_STEP = 15
+    const val MIN_DURATION_SECONDS = 30
+
+    fun doneCount(exercises: List<ActiveExercise>): Int =
+        exercises.sumOf { ex -> ex.sets.count { it.done } }
+
+    fun totalSets(exercises: List<ActiveExercise>): Int =
+        exercises.sumOf { it.sets.size }
+
+    fun canFinish(exercises: List<ActiveExercise>): Boolean =
+        doneCount(exercises) > 0
+
+    fun allDone(exercises: List<ActiveExercise>): Boolean {
+        val total = totalSets(exercises)
+        return total > 0 && doneCount(exercises) == total
+    }
+
+    fun currentSetId(exercises: List<ActiveExercise>): String? =
+        exercises.flatMap { it.sets }.firstOrNull { !it.done }?.id
+
+    /** 1-based index of the exercise that owns the current set, or null if all done. */
+    fun currentExerciseIndex(exercises: List<ActiveExercise>): Int? {
+        val id = currentSetId(exercises) ?: return null
+        val exId = exercises.flatMap { it.sets }.find { it.id == id }?.exerciseId ?: return null
+        val idx = exercises.indexOfFirst { it.exerciseId == exId }
+        return if (idx >= 0) idx + 1 else null
+    }
+
+    fun exerciseCount(exercises: List<ActiveExercise>): Int = exercises.size
+
+    /**
+     * 1-based position of the current set within its exercise, and that exercise's set count.
+     * Null when the session has no current set.
+     */
+    fun currentSetInExercise(exercises: List<ActiveExercise>): Pair<Int, Int>? {
+        val id = currentSetId(exercises) ?: return null
+        val set = exercises.flatMap { it.sets }.find { it.id == id } ?: return null
+        val ex = exercises.find { it.exerciseId == set.exerciseId } ?: return null
+        val total = ex.sets.size.coerceAtLeast(1)
+        val pos = (set.setIndex + 1).coerceIn(1, total)
+        return pos to total
+    }
+
+    /**
+     * Name of the next exercise after the current incomplete set (when this is the
+     * last incomplete set of the current exercise). Null if none / all done.
+     */
+    fun nextExerciseName(exercises: List<ActiveExercise>): String? {
+        val currentId = currentSetId(exercises) ?: return null
+        val flat = exercises.flatMap { ex -> ex.sets.map { it to ex } }
+        val currentIdx = flat.indexOfFirst { it.first.id == currentId }
+        if (currentIdx < 0) return null
+        val currentExId = flat[currentIdx].first.exerciseId
+        // Remaining incomplete sets in this exercise (including current)
+        val remainingHere = flat.drop(currentIdx).count {
+            !it.first.done && it.first.exerciseId == currentExId
+        }
+        if (remainingHere > 1) return null
+        return flat.drop(currentIdx + 1)
+            .firstOrNull { !it.first.done && it.first.exerciseId != currentExId }
+            ?.second
+            ?.name
+    }
+
+    fun defaultReps(planReps: Int, previousReps: Int?): Int =
+        (previousReps ?: planReps).coerceIn(1, 99)
+
+    fun defaultWeight(previousWeight: Double?): Double =
+        (previousWeight ?: 0.0).coerceAtLeast(0.0)
+
+    /**
+     * Rest after completing a set. Skip rest when the session is fully logged.
+     * If a rest is already ticking, keep it (unless all done).
+     * Prefer [exerciseRest] (per-exercise override) over session [defaultRest].
+     */
+    fun restAfterComplete(
+        currentRest: Int,
+        defaultRest: Int = DEFAULT_REST_SECONDS,
+        allSetsDone: Boolean = false,
+        exerciseRest: Int? = null,
+    ): Int {
+        if (allSetsDone) return 0
+        if (currentRest > 0) return currentRest
+        val preferred = exerciseRest?.let { normalizeDefaultRest(it) } ?: defaultRest
+        return preferred.coerceAtLeast(0)
+    }
+
+    /** Cycle superset letter: none → A → B → C → D → none. */
+    fun nextSupersetGroup(current: String): String = when (current.uppercase()) {
+        "" -> "A"
+        "A" -> "B"
+        "B" -> "C"
+        "C" -> "D"
+        else -> ""
+    }
+
+    fun moveExercise(exercises: List<ActiveExercise>, exerciseId: String, delta: Int): List<ActiveExercise> {
+        val idx = exercises.indexOfFirst { it.exerciseId == exerciseId }
+        if (idx < 0) return exercises
+        val target = idx + delta
+        if (target !in exercises.indices) return exercises
+        val mutable = exercises.toMutableList()
+        val item = mutable.removeAt(idx)
+        mutable.add(target, item)
+        return mutable
+    }
+
+    fun normalizeDefaultRest(seconds: Int): Int = when {
+        seconds <= 45 -> 45
+        seconds <= 60 -> 60
+        seconds <= 90 -> 90
+        else -> 120
+    }
+
+    /**
+     * After a set is marked done, copy its weight/reps onto the next incomplete set
+     * of the same exercise (standard logger carry-forward).
+     */
+    fun carryForwardWithinExercise(
+        exercises: List<ActiveExercise>,
+        completedSetId: String,
+    ): List<ActiveExercise> {
+        val completed = exercises.flatMap { it.sets }.find { it.id == completedSetId } ?: return exercises
+        if (!completed.done) return exercises
+        val next = exercises.flatMap { it.sets }
+            .firstOrNull { !it.done && it.exerciseId == completed.exerciseId }
+            ?: return exercises
+        return exercises.map { ex ->
+            ex.copy(
+                sets = ex.sets.map { s ->
+                    if (s.id == next.id) {
+                        s.copy(
+                            reps = completed.reps.coerceIn(1, 99),
+                            weight = completed.weight.coerceAtLeast(0.0),
+                            rpe = completed.rpe,
+                        )
+                    } else {
+                        s
+                    }
+                },
+            )
+        }
+    }
+
+    fun adjustRest(current: Int, delta: Int): Int =
+        (current + delta).coerceAtLeast(0)
+
+    fun completedSetsForPersist(exercises: List<ActiveExercise>): List<LoggedSet> =
+        exercises.flatMap { it.sets }.filter { it.done }
+
+    fun durationSeconds(startedAtMs: Long, nowMs: Long = System.currentTimeMillis()): Int =
+        ((nowMs - startedAtMs) / 1000).toInt().coerceAtLeast(MIN_DURATION_SECONDS)
+
+    fun convertWeight(value: Double, fromUnit: String, toUnit: String): Double =
+        com.missionwinning.core.model.WeightUnits.convert(value, fromUnit, toUnit)
+
+    fun weightStep(unit: String): Double =
+        com.missionwinning.core.model.WeightUnits.step(unit)
+
+    fun normalizeUnit(unit: String): String =
+        com.missionwinning.core.model.WeightUnits.normalize(unit)
+
+    fun formatWeight(value: Double): String =
+        com.missionwinning.core.model.WeightUnits.format(value)
+
+    fun formatWeightWithUnit(value: Double, unit: String): String =
+        com.missionwinning.core.model.WeightUnits.formatWithUnit(value, unit)
+
+    /** Session volume = sum(weight × reps) for completed non-warmup sets. */
+    fun sessionVolume(exercises: List<ActiveExercise>): Double =
+        completedSetsForPersist(exercises)
+            .filter { SetKind.countsTowardVolume(it.kind) }
+            .sumOf { it.weight * it.reps }
+
+    const val DEFAULT_NEW_EXERCISE_SETS = 3
+    const val MAX_EXERCISES = 24
+
+    /**
+     * Append a set to [exerciseId], copying load from the last set when present.
+     * Caps at [MAX_SETS_PER_EXERCISE].
+     */
+    fun addSet(
+        exercises: List<ActiveExercise>,
+        exerciseId: String,
+        newSetId: String,
+    ): List<ActiveExercise> {
+        return exercises.map { ex ->
+            if (ex.exerciseId != exerciseId) return@map ex
+            if (ex.sets.size >= MAX_SETS_PER_EXERCISE) return@map ex
+            val last = ex.sets.lastOrNull()
+            val nextIndex = ex.sets.size
+            val added = LoggedSet(
+                id = newSetId,
+                exerciseId = ex.exerciseId,
+                exerciseName = ex.name,
+                setIndex = nextIndex,
+                reps = (last?.reps ?: 10).coerceIn(1, 99),
+                weight = (last?.weight ?: 0.0).coerceAtLeast(0.0),
+                done = false,
+                previousReps = last?.previousReps,
+                previousWeight = last?.previousWeight,
+                rpe = null,
+                kind = SetKind.Normal,
+                note = "",
+            )
+            ex.copy(sets = ex.sets + added)
+        }
+    }
+
+    /**
+     * Append a catalog exercise (or extra sets if it is already in the session).
+     * [newSetIds] must have length ≥ [setCount] (or remaining room for an existing exercise).
+     */
+    fun addExercise(
+        exercises: List<ActiveExercise>,
+        exerciseId: String,
+        exerciseName: String,
+        newSetIds: List<String>,
+        setCount: Int = DEFAULT_NEW_EXERCISE_SETS,
+        defaultReps: Int = 10,
+        defaultWeight: Double = 0.0,
+        previousByIndex: Map<Int, Pair<Int?, Double?>> = emptyMap(),
+    ): List<ActiveExercise> {
+        val existing = exercises.find { it.exerciseId == exerciseId }
+        if (existing != null) {
+            var result = exercises
+            val room = (MAX_SETS_PER_EXERCISE - existing.sets.size).coerceAtLeast(0)
+            val toAdd = setCount.coerceIn(1, room.coerceAtLeast(1)).coerceAtMost(room)
+            if (toAdd <= 0) return exercises
+            newSetIds.take(toAdd).forEach { id ->
+                result = addSet(result, exerciseId, id)
+            }
+            return result
+        }
+        if (exercises.size >= MAX_EXERCISES) return exercises
+        val count = setCount.coerceIn(1, MAX_SETS_PER_EXERCISE)
+        val ids = newSetIds.take(count)
+        if (ids.size < count) return exercises
+        val sets = ids.mapIndexed { idx, id ->
+            val prev = previousByIndex[idx]
+            LoggedSet(
+                id = id,
+                exerciseId = exerciseId,
+                exerciseName = exerciseName,
+                setIndex = idx,
+                reps = (prev?.first ?: defaultReps).coerceIn(1, 99),
+                weight = (prev?.second ?: defaultWeight).coerceAtLeast(0.0),
+                done = false,
+                previousReps = prev?.first,
+                previousWeight = prev?.second,
+                rpe = null,
+                kind = SetKind.Normal,
+                note = "",
+            )
+        }
+        return exercises + ActiveExercise(
+            exerciseId = exerciseId,
+            name = exerciseName,
+            sets = sets,
+            supersetGroup = "",
+            defaultRestSeconds = null,
+        )
+    }
+
+    fun volumeFromSets(weight: Double, reps: Int, kind: SetKind): Double =
+        if (SetKind.countsTowardVolume(kind)) weight * reps else 0.0
+
+    /**
+     * Drop a set by id and reindex remaining sets in that exercise.
+     * Removes the exercise entirely when its last set is removed.
+     */
+    fun removeSet(
+        exercises: List<ActiveExercise>,
+        setId: String,
+    ): List<ActiveExercise> {
+        return exercises.mapNotNull { ex ->
+            if (ex.sets.none { it.id == setId }) return@mapNotNull ex
+            val remaining = ex.sets.filter { it.id != setId }
+            if (remaining.isEmpty()) return@mapNotNull null
+            ex.copy(
+                sets = remaining.mapIndexed { idx, s -> s.copy(setIndex = idx) },
+            )
+        }
+    }
+
+    /** Drop an entire exercise block from the session. */
+    fun removeExercise(
+        exercises: List<ActiveExercise>,
+        exerciseId: String,
+    ): List<ActiveExercise> = exercises.filter { it.exerciseId != exerciseId }
+
+    /**
+     * Convert a stored previous weight into the display unit for this session.
+     * Legacy rows without unit are treated as [storedUnit] default `kg`.
+     */
+    fun previousWeightInUnit(
+        storedWeight: Double?,
+        storedUnit: String?,
+        displayUnit: String,
+    ): Double? {
+        if (storedWeight == null) return null
+        val from = normalizeUnit(storedUnit ?: "kg")
+        val to = normalizeUnit(displayUnit)
+        return convertWeight(storedWeight, from, to)
+    }
+}

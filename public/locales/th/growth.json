@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "เชิญเพื่อน",
+  "growthReferralDesc": "แบ่งปันรหัสของคุณ เมื่อมีคนเริ่มต้นเส้นทางอิสระด้วยสิ่งนี้ คุณทั้งคู่ก็จะพัฒนาภารกิจให้มากขึ้น การรับรู้เท่านั้น — ยังไม่มีการจ่ายรางวัล",
+  "growthReferralInvite": "เชิญเพื่อน",
+  "growthReferralCode": "รหัสของคุณ",
+  "growthReferralCount": "เชิญแล้ว {{count}}",
+  "growthReferralSignIn": "เข้าสู่ระบบ",
+  "growthReferralSignInHint": "ลงชื่อเข้าใช้เพื่อรับรหัสเชิญและแบ่งปันภารกิจ",
+  "growthRecognition3": "นายหน้า",
+  "growthRecognition10": "รับสมัครพนักงานภาคสนาม",
+  "growthRecognition25": "ภารกิจรับสมัครงาน",
+  "growthShareCopied": "คัดลอกลิงก์แล้ว",
+  "growthShareFailed": "ไม่สามารถแบ่งปันได้"
+}
