@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "Freund einladen",
+  "growthReferralDesc": "Teile deinen Code. Wenn jemand den kostenlosen Weg damit startet, wächst die Mission. Nur Anerkennung — noch keine bezahlten Rewards.",
+  "growthReferralInvite": "Freund einladen",
+  "growthReferralCode": "Dein Code",
+  "growthReferralCount": "{{count}} geworben",
+  "growthReferralSignIn": "Anmelden",
+  "growthReferralSignInHint": "Melde dich an, um deinen Einladungscode zu erhalten.",
+  "growthRecognition3": "Recruiter",
+  "growthRecognition10": "Field Recruiter",
+  "growthRecognition25": "Mission Recruiter",
+  "growthShareCopied": "Link kopiert",
+  "growthShareFailed": "Teilen fehlgeschlagen"
+}

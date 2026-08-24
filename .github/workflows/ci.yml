@@ -1,0 +1,244 @@
+# Lean CI — PR + manual only. Master pushes do not run this workflow so
+# remaining Actions minutes go to deploy-production.yml (www updates).
+# Extended jobs (e2e, Android, lighthouse, smokes): Actions → CI extended.
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+    # Docs-only PRs still run gitleaks / aikido. This job is the minutes hog
+    # (npm ci + production build + Playwright). Skip it when the diff cannot
+    # change lint/typecheck/tests/build. GitHub also skips the whole workflow
+    # when the HEAD commit message contains [skip ci] / [ci skip].
+    paths-ignore:
+      - 'docs/**'
+      - 'seo/**'
+      - 'media/**'
+      - '.claude/**'
+      - 'public/brand/**'
+      - 'public/learn/**'
+      - 'public/form-guides/**'
+      - 'public/social/**'
+      - 'public/magazine/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Hero e2e runs in this job so the production build happens exactly once.
+    # PRIVATE_MODE=false compiles the service worker, which the offline spec needs.
+    # Must stay in step with `BUILD_ENV` in scripts/gate.mjs — enforced by
+    # `gateEnvParity.test.ts`. `.249`: these two drifted, and nobody could see
+    # it while Actions was billing-blocked.
+    env:
+      PRIVATE_MODE: 'false'
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      # `.198` added this to the local gate and not here, so `isPushSupported()`
+      # returned false on CI and every component behind it — the wind-down
+      # offer, the day-review opt-in — rendered nothing. `Today shows one red
+      # action at 19:00` asserts that control is mounted, so it failed on CI and
+      # passed locally for as long as CI could not run.
+      #
+      # Safe: this is the public half of a keypair and only gates whether the UI
+      # draws. Nothing can subscribe — the server has no private key, and no
+      # test grants notification permission.
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Full history so `origin/master` exists — check-build-label compares the
+          # branch's APP_BUILD_LABEL against the base. Under the default shallow
+          # clone that ref is absent and the check silently skips, which would have
+          # made the step below decorative rather than a gate.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # These three ran only in `npm run gate` (local). Two of them exist because the
+      # regression they catch already happened once — .129 shipped 10 sites where a
+      # `text-*` utility nullified a `.display-*` clamp, and .131 pinned the brand
+      # tokens after the rebrand. A guard nobody runs on a PR is not a guard, and
+      # branches from other sessions never run the local gate.
+      - name: Build label + hard rule 5
+        run: npm run check-build-label
+
+      # Horizon W process ratchet — surface paths need RESULT status:pass or
+      # Excellence-Override trailer. Same base...HEAD shape as check-build-label;
+      # needs full history (fetch-depth above).
+      - name: Excellence gate
+        run: npm run check-excellence-gate
+
+      # Reads docs/mechanics/ and the constants the constraint nodes cite. Cheap,
+      # and the failure it catches is quiet: a constraint whose enforcer has been
+      # renamed away still reads as a rule while refusing nothing.
+      - name: Idea graph
+        run: npm run idea:validate
+
+      - name: Display type
+        run: npm run check-display-type
+
+      - name: Token sync (web ↔ Android)
+        run: npm run check-token-sync
+
+      # `.250` — these four ran **only** in scripts/gate.mjs, so they were
+      # advisory in the one lane an agent can forget and absent from the lane
+      # that blocks the PR. That is the defect the comment above names, with the
+      # lanes swapped: `.221`'s design-system guard, `.209`'s byte budget and
+      # `.222`'s locale-split check were all invisible to CI.
+      - name: Design system (paper/ink · one red · radius 0)
+        run: npm run check-design-system
+
+      # MUST run before "Export locale JSON (smoke)". `npm run export-locales`
+      # regenerates public/locales/** in the pre-`.222` unsplit shape — verified
+      # by running it — so this check fails for certain if it comes after.
+      # `.222` built the splitter as re-runnable precisely because "a cleanup
+      # that cannot be repeated undoes itself the next time the fill tool runs";
+      # `.250` then had that happen for real and committed 394 regenerated files
+      # by accident.
+      - name: Locale split
+        run: npm run check-locale-split
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Route contract tests
+        run: npm run test:routes
+
+      # `.262` — the two lanes above report pass/fail; this reports how much of the
+      # codebase they touched, over every source file rather than only the ones
+      # something imported. Here as well as in `npm run gate` on purpose: `.213`
+      # found the two had silently diverged, and `.200`/`.219` were both checks
+      # that existed and ran nowhere.
+      - name: Coverage floors
+        run: npm run coverage
+
+      - name: Dependency audit (high)
+        # `npm run security-audit`, not the raw command: package.json already
+        # defines it, and two spellings of one check is how they drift.
+        run: npm run security-audit
+        continue-on-error: true
+
+      - name: Export locale JSON (smoke)
+        run: npm run export-locales
+
+      - name: i18n parity (APP_LANGS)
+        run: npm run i18n:parity
+
+      - name: i18n coverage
+        run: npm run i18n:coverage
+
+      - name: Deploy readiness
+        run: npx tsx -e "import { assertDeployReady } from './src/lib/deployReadiness'; assertDeployReady();"
+
+      - name: Compliance status (soft)
+        continue-on-error: true
+        run: npm run compliance:status -- --ci
+
+      - name: Upload compliance status
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: compliance-status
+          path: compliance-status.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Production build
+        run: npm run build
+
+      # Reads the prerendered HTML, so it has to follow the build.
+      - name: Bundle budget (gzipped initial JS)
+        run: npm run bundle-budget
+
+      # The logger is the product — a PR that breaks it must not go green.
+      # Chromium only, @gate-tagged specs only.
+      #
+      # `.262` — this line used to claim "a11y / visual / Lighthouse stay in CI
+      # extended". Visual and Lighthouse do. **a11y does not**: `ci-extended.yml`
+      # has no such job, so those 34 tests run in `npm run gate` and nowhere else.
+      # `gate.mjs`'s header already called this comment out as false and it was
+      # still here. Whether to spend PR minutes on a11y is a founder call — the
+      # comment is corrected rather than the lane silently added.
+      - name: Install Playwright chromium
+        run: npx playwright install chromium
+
+      - name: Start server
+        run: |
+          npm run start &
+          for i in $(seq 1 45); do
+            curl -sf http://127.0.0.1:3000/log >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:3000/log >/dev/null || (echo "Server failed to start" && exit 1)
+
+      - name: Hero path E2E (gate)
+        env:
+          SMOKE_BASE_URL: http://127.0.0.1:3000
+        run: npm run e2e:gate
+
+  # The www surface (sites/www) — a different application: Astro static output
+  # for Cloudflare Pages, not Next.js for Vercel. Its own node_modules, its own
+  # Tailwind major. Kept a separate job so a marketing-site failure names itself
+  # instead of appearing as "build-and-test failed", and so it does not extend
+  # the critical path of the app's build.
+  #
+  # No `env:` block on purpose: NEXT_PUBLIC_* means nothing to Astro, and
+  # workflowBuildEnv.test.ts exempts this job by id for that reason.
+  www:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # Root install first: the site imports src/lib/contentFloors.ts at build
+      # time, and the checks below are root scripts.
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install www dependencies
+        run: npm --prefix sites/www ci
+
+      # Regenerate and diff rather than trust the committed file. tokens.css is
+      # generated from src/index.css; if someone edits the CSS without running
+      # `npm run www:tokens`, the committed copy is stale and every colour on the
+      # marketing site is silently a build behind.
+      - name: Tokens are current
+        run: |
+          npm run www:tokens
+          git diff --exit-code sites/www/src/styles/tokens.css
+
+      # The rhythm guard renders the built page, so the browser is needed
+      # before the build+check step. It serves dist itself on an ephemeral
+      # port — no server to start here, no port to collide with the app job.
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      # Same entry point the local gate uses (step 15), so the two cannot drift
+      # — gateEnvParity.test.ts compares the script names in both.
+      - name: Build + checks
+        run: npm run www:gate

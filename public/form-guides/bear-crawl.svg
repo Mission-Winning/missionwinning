@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none" role="img" aria-label="Bear crawl: hover, step, advance">
+  <title>Bear crawl form diagram</title>
+  <rect width="360" height="220" fill="#f3f2f2"></rect>
+  <text x="60" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">HOVER</text>
+  <text x="180" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">STEP</text>
+  <text x="300" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">ADVANCE</text>
+  <line x1="20" y1="185" x2="100" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="140" y1="185" x2="220" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="260" y1="185" x2="340" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="88" cy="102" r="9"></circle>
+    <line x1="88" y1="102" x2="76" y2="114"></line>
+    <line x1="76" y1="114" x2="48" y2="128"></line>
+    <line x1="76" y1="114" x2="72" y2="116"></line>
+    <line x1="72" y1="116" x2="92" y2="181"></line>
+    <line x1="72" y1="116" x2="70" y2="181"></line>
+    <line x1="48" y1="128" x2="44" y2="148"></line>
+    <line x1="44" y1="148" x2="32" y2="162"></line>
+    <line x1="48" y1="128" x2="56" y2="148"></line>
+    <line x1="56" y1="148" x2="48" y2="162"></line>
+  </g>
+  <circle cx="48" cy="148" r="3.5" fill="#ec3013"></circle>
+  <text x="48" y="140" text-anchor="middle" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="8">knees off</text>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="212" cy="102" r="9"></circle>
+    <line x1="212" y1="102" x2="198" y2="114"></line>
+    <line x1="198" y1="114" x2="172" y2="128"></line>
+    <line x1="198" y1="114" x2="194" y2="116"></line>
+    <line x1="194" y1="116" x2="222" y2="181"></line>
+    <line x1="194" y1="116" x2="186" y2="181"></line>
+    <line x1="172" y1="128" x2="158" y2="148"></line>
+    <line x1="158" y1="148" x2="148" y2="162"></line>
+    <line x1="172" y1="128" x2="176" y2="162"></line>
+  </g>
+  <path d="M208 145 L222 160" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon points="222,160 213.61723292414842,156.8808308554971 219.46567507009138,151.422284852617" fill="#ec3013"></polygon>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="332" cy="102" r="9"></circle>
+    <line x1="332" y1="102" x2="318" y2="114"></line>
+    <line x1="318" y1="114" x2="292" y2="128"></line>
+    <line x1="318" y1="114" x2="314" y2="116"></line>
+    <line x1="314" y1="116" x2="336" y2="181"></line>
+    <line x1="314" y1="116" x2="316" y2="181"></line>
+    <line x1="292" y1="128" x2="296" y2="162"></line>
+    <line x1="292" y1="128" x2="278" y2="148"></line>
+    <line x1="278" y1="148" x2="268" y2="162"></line>
+  </g>
+  <path d="M300 132 L316 126" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon points="316,126 309.9138603458012,132.5543042429833 307.1048728130941,125.06367082243096" fill="#ec3013"></polygon>
+  <text x="318" y="129" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="9">crawl</text>
+</svg>

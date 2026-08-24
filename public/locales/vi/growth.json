@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "Mời bạn",
+  "growthReferralDesc": "Chia sẻ mã của bạn. Khi ai đó bắt đầu con đường tự do của họ với nó, cả hai bạn đều phát triển sứ mệnh. Chỉ được công nhận - chưa có phần thưởng nào được trả.",
+  "growthReferralInvite": "Mời bạn",
+  "growthReferralCode": "Mã của bạn",
+  "growthReferralCount": "{{count}} đã mời",
+  "growthReferralSignIn": "Đăng nhập",
+  "growthReferralSignInHint": "Đăng nhập để nhận mã mời và chia sẻ nhiệm vụ.",
+  "growthRecognition3": "Nhà tuyển dụng",
+  "growthRecognition10": "Nhà tuyển dụng hiện trường",
+  "growthRecognition25": "Nhà tuyển dụng sứ mệnh",
+  "growthShareCopied": "Đã sao chép liên kết",
+  "growthShareFailed": "Không thể chia sẻ"
+}

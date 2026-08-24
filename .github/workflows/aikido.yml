@@ -1,0 +1,53 @@
+# Aikido Security — release gate (CRITICAL deps)
+#
+# Complements soft npm audit + CodeQL. Skips cleanly when AIKIDO_SECRET_KEY is unset.
+# Note: `if: secrets.X != ''` is unreliable on GitHub Actions — use an env gate step instead.
+# Docs: docs/AIKIDO.md
+
+name: Aikido
+
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: aikido-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  aikido-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check AIKIDO_SECRET_KEY
+        id: gate
+        env:
+          AIKIDO_SECRET_KEY: ${{ secrets.AIKIDO_SECRET_KEY }}
+        run: |
+          if [ -z "$AIKIDO_SECRET_KEY" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "AIKIDO_SECRET_KEY unset — skipping (founder: docs/AIKIDO.md)."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout code
+        if: steps.gate.outputs.configured == 'true'
+        uses: actions/checkout@v5
+
+      - name: Detect new vulnerabilities
+        if: steps.gate.outputs.configured == 'true'
+        uses: AikidoSec/github-actions-workflow@v1.0.13
+        with:
+          secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
+          fail-on-timeout: true
+          fail-on-dependency-scan: true
+          fail-on-sast-scan: false
+          fail-on-iac-scan: false
+          minimum-severity: 'CRITICAL'
+          timeout-seconds: 180
+          post-scan-status-comment: 'off'
+          post-sast-review-comments: 'off'
+          github-token: ${{ secrets.GITHUB_TOKEN }}

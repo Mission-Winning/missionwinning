@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "邀请好友",
+  "growthReferralDesc": "Share your code. When someone starts their free path with it, you both grow the mission. Recognition only — no paid rewards yet.",
+  "growthReferralInvite": "邀请好友",
+  "growthReferralCode": "你的代码",
+  "growthReferralCount": "已邀请 {{count}} 人",
+  "growthReferralSignIn": "登录",
+  "growthReferralSignInHint": "Sign in to get your invite code and share the mission.",
+  "growthRecognition3": "Recruiter",
+  "growthRecognition10": "Field Recruiter",
+  "growthRecognition25": "Mission Recruiter",
+  "growthShareCopied": "链接已复制",
+  "growthShareFailed": "Could not share"
+}

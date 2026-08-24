@@ -1,0 +1,1383 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Modernist tokens (rebrand 2026-07-25, DESIGN_ORCHESTRATION wave D5):
+     ink on paper, ONE red accent, radius 0, 2px rules, light-only.
+     Values from the design handoff token sheet; kept as HSL triplets for
+     scripts/check-token-sync.mjs. */
+  :root {
+    --background: 0 4% 95%; /* paper #f3f2f2 — the only ground, never pure white */
+    --foreground: 20 5% 12%; /* ink #201e1d */
+    --card: 0 2% 92%; /* surface #eae9e9 — subtle panel fill */
+    --card-foreground: 20 5% 12%;
+    --popover: 0 2% 92%;
+    --popover-foreground: 20 5% 12%;
+    /* The red is THREE values because the paper ground inverts the .127 contrast
+       math. Poster red #ec3013 is only 3.78:1 on paper and 4.19:1 under white —
+       fine for fills with large (≥19px/700) labels, chrome, and icons; a WCAG
+       failure for 14px button text and any small colored text. So:
+         --accent-poster  #ec3013 — poster fields, .primary-action, large labels
+         --primary-fill   #dd2b0f — shadcn button fills; white text = 4.74:1 AA
+         --primary        #ae1800 — text/border red; 6.4:1 on paper at any size
+       text-primary (276 call sites) therefore stays AA everywhere without edits. */
+    --primary: 8 100% 34%;
+    --primary-foreground: 0 0% 100%;
+    --primary-fill: 8 88% 46%;
+    --primary-fill-hover: 8 100% 34%;
+    --accent-poster: 8 85% 50%;
+    /* Tinted fills — highlighted rows, "today" states, progress tracks. */
+    --accent-tint: 11 100% 97%; /* #fff2ef */
+    --secondary: 0 2% 92%;
+    --secondary-foreground: 20 5% 12%;
+    --muted: 0 2% 92%;
+    /* 28% not 37%: several utilities dim this further (`/80` on the legal footer
+       and .briefing-rule) and at 37% the composited result was 3.75:1 on paper —
+       under the 4.5 floor. 28% (≈ ink at 78%, inside the handoff's 70–78% band)
+       gives 8.4:1 full and 4.66:1 at 80% alpha on the surface fill. */
+    --muted-foreground: 20 1% 28%;
+    --accent: 11 100% 97%;
+    --accent-foreground: 8 92% 25%;
+    /* The full ramps from the handoff token sheet (_ds/…/styles.css). Phase A
+       adds them because the per-screen layouts need steps the semantic roles
+       never covered: ink panels (rest dock, flow runner, breathing) are
+       neutral-900 on neutral-100, and the honor tier is accent-800.
+
+       Three steps are ALIASES, and the indirection points the "wrong" way on
+       purpose — scale step → semantic role, not role → step. It has to:
+       scripts/check-token-sync.mjs regex-parses this block for literal HSL
+       triplets on --primary and --primary-fill, so pointing those at a var()
+       would make the gate unable to read them. Aliasing this direction still
+       gets the thing that matters — one value, so the ramp and the roles can
+       never drift apart.
+
+       Rounding: triplets land within 1/255 of the handoff hex, which is the
+       same tolerance colorsWithinTolerance() already allows. */
+    --neutral-100: 0 22.2% 96.5%; /* #f8f4f4 */
+    --neutral-200: 0 6.7% 91.2%; /* #eae7e7 — meter-bar tracks */
+    --neutral-300: 0 4.8% 83.5%; /* #d7d3d3 */
+    --neutral-400: 0 2.8% 72.2%; /* #bab6b6 */
+    --neutral-500: 0 2% 60%; /* #9b9797 — rail group labels */
+    --neutral-600: 0 1.6% 48.2%; /* #7d7979 */
+    --neutral-700: 0 1.6% 37.1%; /* #605d5d */
+    --neutral-800: 0 2.3% 26.1%; /* #444141 */
+    --neutral-900: 0 2.3% 17.3%; /* #2d2b2b — ink panel ground */
+    --accent-100: var(--accent-tint); /* #fff2ef — active rows, today states */
+    --accent-200: 11 100% 92.5%; /* #ffe0d9 */
+    --accent-300: 10 100% 86.1%; /* #ffc4b8 */
+    --accent-400: 10 100% 75.7%; /* #ff9783 — accent ON the ink panels */
+    --accent-500: 8 100% 61.8%; /* #ff563c */
+    --accent-600: var(--primary-fill); /* #dd2b0f */
+    --accent-700: var(--primary); /* #ae1800 */
+    --accent-800: 8 92.2% 25.3%; /* #7c1405 — honor tier ONLY (PRs/victories) */
+    --accent-900: 9 69.2% 17.8%; /* #4d170e — text on accent-100 */
+    /* Flat by default. These exist for dialogs and the ONE boss panel per
+       screen — nothing else may elevate. */
+    --shadow-sm: 0 1px 2px hsl(var(--neutral-900) / 0.14);
+    --shadow-md: 0 3px 10px hsl(var(--neutral-900) / 0.16);
+    --shadow-lg: 0 12px 32px hsl(var(--neutral-900) / 0.22);
+    --destructive: 8 100% 34%;
+    --destructive-foreground: 0 0% 100%;
+    /* ALL rules are 2px solid this gray (≈ ink 40% on paper) — never hairlines. */
+    --border: 0 1% 62%;
+    --input: 0 1% 62%;
+    --ring: 8 85% 50%;
+    --radius: 0rem; /* zero everywhere, on purpose — see tailwind.config.js */
+    /* Brass is retired on web — the neutral ramp carries hierarchy, and the
+       honor tier (accent-800) took the one job brass was actually doing. As of
+       `.149` there are ZERO `bg-/text-/border-brass` call sites left; the token
+       stays only because `--brass` is still referenced by the Tailwind colour
+       map, and deleting it there is a separate, wider change. Do not reach for
+       it — anything that wants "earned" wants `Badge variant="honor"`. */
+    --brass: 20 1% 37%;
+    --brass-foreground: 0 4% 95%;
+    --surface-raised: 0 2% 92%;
+    /* Semantic status — deep, text-safe values for the light ground. */
+    --status-warn: 35 100% 28%;
+    --status-info: 210 80% 34%;
+    --status-danger: 8 100% 34%;
+    --status-ok: 158 90% 24%;
+  }
+}
+
+@layer base {
+  /* One face for everything: app/layout.tsx loads Archivo once and the three
+     legacy font vars alias it, so the 84 font-display/font-mono call sites keep
+     working without edits. */
+  :root {
+    --font-inter: var(--font-archivo);
+    --font-display: var(--font-archivo);
+    --font-mono: var(--font-archivo);
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    color-scheme: light;
+    font-family: var(--font-archivo), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    min-height: 100vh;
+    text-wrap: pretty;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /**
+   * One keyboard focus indicator for the whole app.
+   *
+   * There was none. `focus-visible` appeared only in `button.tsx`, so the 91 raw
+   * `<button>` elements — including `AdaptiveOverlay`'s close button, which the overlay
+   * programmatically focuses on open — and every `<a>`, `<summary>` and `.primary-action`
+   * relied on the browser default, which is close to invisible on this navy.
+   *
+   * axe-core does not reliably test focus visibility, which is why `npm run a11y` was
+   * 10/10 green while WCAG 2.4.7 failed site-wide. Declared here in `@layer base` so a
+   * component can still override it, and using the `--ring` token that already existed
+   * for exactly this and was unused.
+   */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 0;
+  }
+
+  ::selection {
+    background: hsl(var(--accent-poster) / 0.3);
+  }
+
+  /**
+   * Links inside running text are underlined at rest, not on hover.
+   *
+   * `text-primary hover:underline` is the house idiom (56 call sites) and it
+   * fails WCAG 1.4.1: at rest the only thing separating a red link from the
+   * muted body copy around it is hue, and #ad1700 against #484747 is 1.27:1 —
+   * far under the 3:1 that lets colour be the sole cue. Hovering is not a
+   * remedy for a reader who never hovers, and it does not exist on touch.
+   *
+   * This was failing on /paths and /compare before the redesign started; axe
+   * reports it as `link-in-text-block`.
+   *
+   * Scoped to <p> deliberately. Nav lists, card links and button-shaped links
+   * are not running text, are not flagged by the rule, and should not gain an
+   * underline — so `li a` and bare `a` stay out of it.
+   */
+  p a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Pointer users never see it; keyboard users always do. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+@layer components {
+  /* Modernist card kit — flat surface fills; rules and alignment organize,
+     nothing floats. The old glow tiers collapse into two states. */
+  .content-card {
+    @apply bg-card;
+  }
+
+  /* Tier above content-card: surface + a 2px rule border. */
+  .card-elevated {
+    @apply border-2 border-border bg-card;
+  }
+
+  /* The boss panel: at most ONE per screen. Tint fill, 2px poster border, and
+     the system's only sanctioned elevation. Named for the job it does — the
+     old `card-glow-emerald` described a colour that no longer exists and a
+     glow that was already deleted. */
+  .card-boss {
+    @apply border-2 border-[hsl(var(--accent-poster))] bg-accent-100 shadow-md;
+  }
+
+  /* Flat ruled section — the default way to separate content once a screen is
+     recut. A 2px top rule and nothing else: no fill, no border box. */
+  .card-section {
+    @apply border-t-2 border-border bg-transparent pt-4;
+  }
+
+  /* Selected / active row — nav items, the live set row, open detail panels.
+     The inset edge is the system's "you are here" mark; it reads at a glance
+     without the row having to change size. */
+  .is-active-row {
+    @apply bg-accent-100;
+    box-shadow: inset 3px 0 0 0 hsl(var(--accent-poster));
+  }
+
+  /* Same mark rotated for the mobile tab bar, where the edge runs along the top. */
+  .is-active-tab {
+    @apply bg-accent-100;
+    box-shadow: inset 0 2px 0 0 hsl(var(--accent-poster));
+  }
+
+  /* Segmented control — one ruled strip, the selected cell filled. Square, and
+     divided by 1px hairlines because these are internal divisions, not the 2px
+     section breaks. */
+  .seg {
+    @apply inline-flex overflow-hidden border-2 border-border;
+  }
+
+  .seg-opt {
+    @apply inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 px-3 text-[13px] font-semibold transition-colors;
+  }
+
+  .seg-opt + .seg-opt {
+    @apply border-l border-border;
+  }
+
+  /* `.240` — the selected segment is `is-active-tab`, not a red fill.
+     This shipped as `bg-primary-fill` and was never used by anything, while
+     `MobileNav` and `FuelLogSheet` drew the same state as tint + a 2px poster
+     rule. Four definitions of one question ("what does selected look like")
+     with two different answers, two of them red. Red is the one do-this-now
+     action; a tab is a place, not an action. */
+  .seg-opt[aria-checked='true'],
+  .seg-opt[aria-selected='true'],
+  .seg-opt[data-state='on'],
+  .seg-opt[data-state='active'],
+  .seg-opt:has(input:checked) {
+    @apply bg-accent-100 text-primary;
+    box-shadow: inset 0 2px 0 0 hsl(var(--accent-poster));
+  }
+
+  .seg-opt:not([aria-checked='true']):not([data-state='on']):not(:has(input:checked)):hover {
+    @apply bg-foreground/[0.07];
+  }
+
+  .auth-panel {
+    @apply border-2 border-border bg-card;
+  }
+
+  .auth-divider {
+    @apply relative flex items-center justify-center py-1;
+  }
+
+  .auth-divider::before {
+    content: '';
+    @apply absolute inset-x-0 top-1/2 h-px bg-border/80;
+  }
+
+  .auth-divider span {
+    @apply relative z-10 bg-card px-3 text-[11px] uppercase tracking-widest text-muted-foreground;
+  }
+
+  .oauth-btn {
+    @apply border-border bg-background hover:bg-secondary transition-colors;
+  }
+
+  .oauth-btn-apple {
+    @apply hover:border-foreground;
+  }
+
+  .oauth-btn-google {
+    @apply hover:border-foreground;
+  }
+
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* The primary CTA: poster red, flush-left label (Modernist rule — labels start
+     at the padding edge, never centered). 19px/800 keeps paper-adjacent white on
+     #ec3013 in WCAG large-text territory (3:1) — do not shrink the label. */
+  .primary-action {
+    @apply flex w-full items-center justify-start gap-2 min-h-[52px] bg-[hsl(var(--accent-poster))] px-6 text-left font-extrabold text-[19px] text-primary-foreground transition-colors hover:bg-primary-fill active:bg-primary-fill-hover;
+  }
+
+  /* The global ring is the poster red, and so is this button's fill — so the focus
+     indicator here is ink, or it disappears into the fill it sits on. */
+  .primary-action:focus-visible {
+    outline: 3px solid hsl(var(--foreground));
+    outline-offset: 3px;
+  }
+
+  /* ── Modernist type system (public pages) ─────────────────
+     Kicker (caps telemetry, accent-700) → display headline (Archivo 800,
+     sentence case, flush left) → body. Class names are a contract with
+     scripts/check-display-type.mjs and the e2e suite — recut, never rename. */
+
+  .eyebrow {
+    @apply text-[13px] uppercase tracking-[0.08em] text-muted-foreground;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  .eyebrow-live {
+    @apply text-[13px] uppercase tracking-[0.08em] text-primary;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  .eyebrow-honor {
+    @apply text-[13px] uppercase tracking-[0.08em] text-muted-foreground;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  .display-hero {
+    /* Archivo 800, sentence case (no `uppercase` — the caps were Barlow's), tight
+       leading, negative tracking, flush left. clamp() sizes are the contract
+       check-display-type.mjs protects from `text-*` nullification. */
+    @apply font-display font-extrabold leading-[1.06] tracking-[-0.02em];
+    font-size: clamp(2.625rem, 6vw, 4.75rem);
+  }
+
+  .display-section {
+    @apply font-display font-extrabold leading-[1.12] tracking-[-0.015em];
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+  }
+
+  .display-mega {
+    @apply font-display font-extrabold leading-none tracking-[-0.02em] tabular-nums;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+  }
+
+  .section-index {
+    @apply text-[13px] uppercase tracking-[0.08em] text-muted-foreground tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  .briefing-rule {
+    @apply flex items-center gap-3 text-muted-foreground;
+  }
+
+  .briefing-rule::after {
+    content: '';
+    /* 2px, full strength — Modernist never draws hairlines. */
+    @apply h-0.5 flex-1 bg-border;
+  }
+
+  /*
+   * Athlete Page kits (C6 / S3b) — composition only, token colours only.
+   * Class names are closed: pageKitClasses.ts maps kits here; never free CSS.
+   */
+  .athlete-page-kit {
+    @apply space-y-6;
+  }
+  .athlete-page-kit--stack {
+    @apply space-y-6;
+  }
+  .athlete-page-kit--field {
+    @apply space-y-4 border-l-2 border-primary pl-4;
+  }
+  .athlete-page-kit--ledger {
+    @apply space-y-3;
+  }
+  .athlete-page-kit--ledger [data-athlete-block] {
+    @apply border-t-2 border-border pt-4 first:border-t-0 first:pt-0;
+  }
+  .athlete-page-kit--poster {
+    @apply space-y-6;
+  }
+  .athlete-page-kit--poster .athlete-page-kit__band {
+    @apply poster-field border border-border p-4;
+  }
+  .athlete-page-kit-accent--primary {
+    --athlete-kit-rule: hsl(var(--primary));
+  }
+  .athlete-page-kit-accent--poster {
+    --athlete-kit-rule: hsl(var(--accent-poster));
+  }
+  .athlete-page-kit-accent--ink {
+    --athlete-kit-rule: hsl(var(--foreground));
+  }
+  .athlete-page-kit--field {
+    border-left-color: var(--athlete-kit-rule, hsl(var(--primary)));
+  }
+
+  /*
+   * Athlete Card live preview — token composition only (C6 spirit).
+   * Frame/backdrop ids map 1:1 from clamped cosmetics; never user CSS.
+   */
+  .athlete-card-preview {
+    @apply border-2 border-border bg-background p-4;
+  }
+  .athlete-card-preview--frame-hairline {
+    @apply border-border;
+  }
+  .athlete-card-preview--frame-rule {
+    border-color: hsl(var(--foreground));
+  }
+  .athlete-card-preview--frame-double-rule {
+    border-color: hsl(var(--foreground));
+  }
+  .athlete-card-preview--frame-poster {
+    @apply border-4;
+    border-color: hsl(var(--primary));
+  }
+  .athlete-card-preview--backdrop-paper {
+    @apply bg-background;
+  }
+  .athlete-card-preview--backdrop-grid {
+    background-image: repeating-linear-gradient(
+      to right,
+      hsl(var(--border)) 0 2px,
+      transparent 2px 28px
+    );
+  }
+  .athlete-card-preview--backdrop-rule-field {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 20px,
+      hsl(var(--border)) 20px 22px
+    );
+  }
+  .athlete-card-preview--backdrop-poster-block {
+    background-color: hsl(var(--accent-tint));
+  }
+
+  /* ── Marketing field textures (single-paint, mobile-cheap) ───────── */
+
+  /* Flat paper — the gradient field is retired; rules and the grid organize. */
+  .hero-field {
+    background-color: hsl(var(--background));
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Compact: no horizontal padding. AppLayout already applies `px-4`, and this
+     added another 1rem on top — 32px of inset, 326px of usable width, the
+     narrowest screen in the product on the screen that matters most. The
+     safe-area insets stay for a notched phone in landscape.
+
+     md+: the 1rem comes back. The double-padding was a phone problem; on
+     desktop it is just the gutter handoff 2 was drawn with. */
+  .today-shell {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (min-width: 768px) {
+    .today-shell {
+      padding-left: max(1rem, env(safe-area-inset-left, 0px));
+      padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    }
+  }
+
+  @media (orientation: landscape) and (max-height: 500px) {
+    .today-score-layout {
+      @apply flex-row items-center gap-4;
+    }
+
+    .today-score-layout .today-score-ring {
+      flex-shrink: 0;
+    }
+
+    .today-score-layout .today-score-metrics {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  /* The ONE red field a page is allowed. Display-grade type, paper on red,
+     flush left. Inside it the .primary-action inverts to paper so the field
+     itself carries the red (and the per-page CTA count holds).
+
+     Two names because the grounds differ, and they differ for one reason:
+     `.poster-close` is the marketing sign-off and carries display type only,
+     so poster red is fine — paper on #ec3013 is 4.19:1, which clears the 3:1
+     that large text needs. `.poster-field` is the mid-page version (Today's
+     "your next step") and it carries an 11px kicker and a 14px sub-line, which
+     need 4.5:1. Nothing on #ec3013 reaches that, not even pure white — which
+     is exactly what "never put small text in poster red" means.
+
+     So the field uses --primary #ae1800: still unmistakably the one red, still
+     one of the three sanctioned values, and paper on it is 6.5:1, so every
+     line the panel carries is legible. It is a visibly deeper red than the
+     mock. The alternative was dropping the kicker and the sub-line. */
+  .poster-close {
+    background: hsl(var(--accent-poster));
+    color: hsl(var(--background));
+  }
+
+  .poster-field {
+    background: hsl(var(--primary));
+    color: hsl(var(--background));
+  }
+
+  .poster-close .primary-action,
+  .poster-field .primary-action {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  .poster-close .primary-action:hover,
+  .poster-field .primary-action:hover {
+    background: hsl(var(--accent-tint));
+  }
+
+  .poster-close .primary-action:focus-visible,
+  .poster-field .primary-action:focus-visible {
+    outline-color: hsl(var(--background));
+  }
+
+  /* Secondary text inside the red field. muted-foreground is an ink value and
+     would vanish here, so subordination comes from paper at reduced alpha —
+     but only as far as the contrast budget allows. On #ae1800: 90% paper is
+     ~5.9:1 and full paper is 6.5:1, both clear of 4.5. The mock's .85 kicker
+     was 3.04:1 on poster red, which is what axe caught. */
+  .poster-field .poster-sub {
+    color: hsl(var(--background) / 0.9);
+  }
+
+  .poster-field .poster-kicker {
+    color: hsl(var(--background));
+  }
+
+  /* Section seams are honest 2px rules now — full-bleed, no fade, no glow. */
+  .section-seam,
+  .section-seam-glow {
+    border-bottom: none;
+    background-image: linear-gradient(hsl(var(--border)), hsl(var(--border)));
+    background-size: 100% 2px;
+    background-position: bottom;
+    background-repeat: no-repeat;
+  }
+}
+
+@layer utilities {
+  .page-enter {
+    animation: page-enter 0.45s ease-out both;
+  }
+
+  .journey-enter {
+    animation: page-enter 0.5s ease-out 0.06s both;
+  }
+
+  .stagger-enter {
+    animation: page-enter 0.48s ease-out both;
+  }
+
+  /* Scroll-reveal — pair with Reveal / useScrollReveal.
+     Paint first. IntersectionObserver never fires for a full-page
+     capture or a crawler, so opacity:0 here left blank paper between
+     "At a glance" and FAQ. Fade is not allowed to hide copy. */
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker-scroll 32s linear infinite;
+  }
+
+  @keyframes ticker-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-enter,
+    .journey-enter,
+    .stagger-enter,
+    .week-strip-pulse,
+    .score-tick,
+    .victory-reveal,
+    /* A 6px horizontal shake on a failed access code was the one animation here most
+       likely to matter to someone — vestibular triggers are exactly this — and it was
+       the only one not in this block. */
+    .animate-otp-shake {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .victory-lock {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .ticker-track {
+      animation: none;
+    }
+
+    .pressable-card:active {
+      transform: none;
+    }
+  }
+
+  .pressable-card {
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms ease;
+  }
+
+  .pressable-card:active {
+    transform: scale(0.98);
+  }
+
+
+  .score-tick {
+    animation: score-tick 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .week-strip-pulse {
+    animation: week-strip-pulse 350ms ease-out;
+  }
+
+  .victory-reveal {
+    animation: victory-reveal 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .victory-lock {
+    animation: victory-lock 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+
+  @keyframes score-tick {
+    from {
+      opacity: 0.4;
+      transform: scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes week-strip-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.04);
+    }
+  }
+
+  @keyframes victory-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes victory-lock {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  [dir="rtl"] .primary-action svg {
+    transform: scaleX(-1);
+  }
+
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes otp-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-6px);
+    }
+    40% {
+      transform: translateX(6px);
+    }
+    60% {
+      transform: translateX(-4px);
+    }
+    80% {
+      transform: translateX(4px);
+    }
+  }
+
+  .animate-otp-shake {
+    animation: otp-shake 0.35s ease-in-out;
+  }
+
+  .fitness-gradient {
+    /* Carries white text (Button `fitness` variant) — must be a fill value. */
+    @apply bg-primary-fill;
+  }
+  .fitness-text-gradient {
+    @apply text-foreground font-semibold tracking-tight;
+  }
+}
+
+/* —— Beyond the Basics magazine (/guide/print + PDF) ——
+   Tokens follow design system: emerald = action, brass = honor, navy cover, cool paper body. */
+.magazine-root {
+  --mag-paper: hsl(var(--background));
+  --mag-ink: hsl(var(--foreground));
+  --mag-muted: hsl(var(--muted-foreground));
+  --mag-rule: hsl(var(--border));
+  --mag-primary: hsl(var(--primary));
+  /* Modernist (Phase 3 cover recut): the cover field is ink, not navy, and the
+     honor tone is retired — the ramp does the work. */
+  --mag-brass: hsl(var(--muted-foreground));
+  --mag-navy: hsl(var(--foreground));
+  --mag-fg-on-dark: hsl(var(--background));
+  min-height: 100vh;
+  background: var(--mag-paper);
+  color: var(--mag-ink);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+.magazine-screen-bar {
+  border-bottom: 1px solid var(--mag-rule);
+  /* `.244` — was `hsl(0 0% 100%)`. The `--background` token says it outright:
+     "paper #f3f2f2 — the only ground, never pure white". A sixth leftover in
+     the block `.221` cleaned, and it survived that pass for the same reason
+     the chart whites did: the rule matched hex, and this is `hsl()`. Chrome
+     over paper reads as the card surface, not as a brighter paper. */
+  background: hsl(var(--card));
+}
+
+.magazine-screen-bar-inner {
+  margin: 0 auto;
+  max-width: 40rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.magazine-screen-link {
+  font-size: 0.875rem;
+  color: var(--mag-primary);
+  text-decoration: none;
+}
+
+.magazine-screen-link:hover {
+  text-decoration: underline;
+}
+
+.magazine-screen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.magazine-btn-primary {
+  display: inline-flex;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  /* `.221` — was 0.375rem. `--radius: 0` is the rebrand's central rule and the
+     Tailwind scale collapses to it, but raw CSS bypasses that entirely, so the
+     guidebook kept rounded buttons through the whole re-ink. */
+  border-radius: 0;
+  background: var(--mag-primary);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--primary-foreground));
+  text-decoration: none;
+}
+
+.magazine-btn-ghost {
+  display: inline-flex;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  border: 1px solid var(--mag-rule);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--mag-ink);
+  text-decoration: none;
+}
+
+.magazine-document {
+  margin: 0 auto;
+  max-width: 40rem;
+  padding: 0 1.25rem 3rem;
+}
+
+.magazine-root .briefing-rule {
+  color: var(--mag-muted);
+}
+
+.magazine-root .briefing-rule::after {
+  background: var(--mag-rule);
+}
+
+.magazine-root .eyebrow,
+.magazine-root .section-index {
+  color: var(--mag-muted);
+}
+
+.magazine-root .eyebrow-live {
+  color: var(--mag-primary);
+}
+
+.magazine-root .eyebrow-honor {
+  color: var(--mag-brass);
+}
+
+.magazine-h2 {
+  margin: 0 0 1.25rem;
+  color: var(--mag-ink);
+}
+
+.magazine-h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--mag-ink);
+}
+
+.magazine-prose {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--mag-ink);
+}
+
+.magazine-prose-muted {
+  color: var(--mag-muted);
+}
+
+.magazine-ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--mag-ink);
+}
+
+.magazine-ol li {
+  margin-bottom: 0.75rem;
+}
+
+.magazine-toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.magazine-toc-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--mag-rule);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.magazine-toc-num {
+  margin-bottom: 0.15rem;
+}
+
+.magazine-toc-title {
+  font-family: var(--font-display), ui-sans-serif, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--mag-ink);
+}
+
+.magazine-toc-sub {
+  font-size: 0.85rem;
+  color: var(--mag-muted);
+}
+
+.magazine-cover {
+  margin: 0 -1.25rem;
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.magazine-cover-field {
+  background: var(--mag-navy);
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--mag-fg-on-dark);
+}
+
+.magazine-cover-inner {
+  position: relative;
+  z-index: 1;
+  padding: 3rem 1.75rem;
+  max-width: 40rem;
+}
+
+/* Mark + wordmark lockup over the cover's own 2px rule. */
+.magazine-cover-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid hsl(var(--background) / 0.4);
+}
+
+.magazine-cover-monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--mag-paper);
+  color: var(--mag-ink);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: -0.04em;
+}
+
+.magazine-cover-wordmark {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.magazine-cover-eyebrow {
+  margin-bottom: 1.25rem;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(var(--background) / 0.75);
+  font-feature-settings: 'tnum' 1;
+}
+
+.magazine-cover-title {
+  margin: 0;
+  /* display-hero size; keep primary via utility */
+}
+
+.magazine-cover-line {
+  margin: 1rem 0 0;
+  font-size: clamp(1.35rem, 3.5vw, 1.85rem) !important;
+}
+
+.magazine-cover-sub {
+  margin: 1.35rem 0 0;
+  font-size: 1.1rem;
+  color: hsl(var(--background) / 0.78);
+}
+
+.magazine-cover-meta {
+  margin: 2.75rem 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: hsl(var(--background) / 0.6);
+}
+
+.magazine-front,
+.magazine-chapter,
+.magazine-colophon {
+  padding: 2.5rem 0 1rem;
+}
+
+.magazine-chapter-opener {
+  margin-bottom: 2.25rem;
+  padding-bottom: 1.35rem;
+  border-bottom: 2px solid var(--mag-primary);
+}
+
+.magazine-chapter-sub {
+  margin: 0.65rem 0 0;
+  font-size: 1rem;
+  color: var(--mag-muted);
+}
+
+.magazine-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2.15rem;
+}
+
+.magazine-section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.magazine-lead {
+  margin: 0 0 0.9rem;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--mag-muted);
+}
+
+.magazine-body {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--mag-ink);
+}
+
+.magazine-body-p {
+  margin: 0 0 0.85rem;
+}
+
+.magazine-body-p:last-child {
+  margin-bottom: 0;
+}
+
+.magazine-body strong {
+  font-weight: 700;
+}
+
+/* Emerald = do it (practice), not brass */
+.magazine-practice {
+  margin: 1.1rem 0 0;
+  padding: 0.7rem 0 0.7rem 0.9rem;
+  border-left: 3px solid var(--mag-primary);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--mag-primary);
+  break-inside: avoid;
+}
+
+.magazine-practice-label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.magazine-colophon-meta {
+  margin-top: 2rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  line-height: 1.55;
+  color: var(--mag-muted);
+}
+
+.magazine-edition-chip {
+  display: inline-block;
+  margin-bottom: 0.65rem;
+}
+
+/* Editorial teaching blocks (v1.3) — magazine print */
+.magazine-extras {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.magazine-callout {
+  padding: 0.85rem 0.95rem;
+  border-left: 3px solid var(--mag-primary);
+  background: hsl(var(--accent-tint));
+  break-inside: avoid;
+}
+
+.magazine-callout-title {
+  margin: 0 0 0.35rem;
+}
+
+.magazine-callout-body {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--mag-ink);
+}
+
+.magazine-figure {
+  margin: 0.75rem 0 1rem;
+  break-inside: avoid;
+  /* Full figure + caption stay together in print/PDF. */
+  page-break-inside: avoid;
+}
+
+.magazine-figure-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Diagrams (heroes, section teaching art, form SVGs) must not be cropped.
+     `.418` densified figures used `object-fit: cover` + max-height 220px, which
+     sliced 16:9 instructional art into unreadable strips and made the PDF look
+     broken. Contain + a taller cap keeps labels and axes visible. */
+  max-height: min(42vh, 320px);
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0;
+  /* Paper-adjacent fill so a slow-loading figure is not a dark hole. */
+  background: hsl(var(--background));
+  border: 2px solid var(--mag-rule, hsl(var(--border)));
+}
+
+.magazine-figure-caption {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--mag-muted);
+  text-align: center;
+}
+
+@media print {
+  .magazine-figure-img {
+    /* Playwright/Chromium PDF: prefer fixed pt-friendly height, never cover. */
+    max-height: 2.8in;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+.magazine-table-wrap {
+  margin: 0;
+  break-inside: avoid;
+}
+
+.magazine-table-caption {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mag-muted);
+}
+
+.magazine-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.magazine-table th,
+.magazine-table td {
+  border: 1px solid var(--mag-rule);
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.magazine-table th {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mag-muted);
+  background: hsl(var(--card));
+}
+
+.magazine-checklist {
+  break-inside: avoid;
+}
+
+.magazine-checklist-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mag-muted);
+}
+
+.magazine-checklist ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--mag-ink);
+}
+
+.magazine-checklist li {
+  margin-bottom: 0.3rem;
+}
+
+/* Editorial blocks — dark app / public guide */
+.guide-extras {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.guide-callout {
+  padding: 0.85rem 1rem;
+  border-left: 3px solid hsl(var(--primary));
+  background: hsl(var(--primary) / 0.08);
+  border-radius: 0;
+}
+
+.guide-table-wrap {
+  margin: 0;
+}
+
+.guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.guide-table th,
+.guide-table td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.guide-table th {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted) / 0.5);
+}
+
+.guide-checklist ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground) / 0.9);
+}
+
+.guide-checklist li {
+  margin-bottom: 0.3rem;
+}
+
+@media print {
+  @page {
+    size: Letter;
+    margin: 0.65in 0.6in 0.8in 0.6in;
+  }
+
+  @page :first {
+    margin: 0;
+  }
+
+  /* Legacy single-sheet print helpers (non-magazine) */
+  body:has(.print-sheet:not(.magazine-root)) * {
+    visibility: hidden;
+  }
+  body:has(.print-sheet:not(.magazine-root)) .print-sheet,
+  body:has(.print-sheet:not(.magazine-root)) .print-sheet * {
+    visibility: visible;
+  }
+  body:has(.print-sheet:not(.magazine-root)) .print-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .magazine-page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .magazine-cover.magazine-page-break {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  .magazine-root {
+    background: var(--mag-paper) !important;
+    color: var(--mag-ink) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .magazine-document {
+    max-width: none;
+    padding: 0;
+  }
+
+  .magazine-cover {
+    margin: 0;
+    min-height: 0;
+    height: auto;
+  }
+
+  .magazine-cover-field {
+    min-height: 11in;
+    width: 100%;
+  }
+
+  .magazine-cover-inner {
+    padding: 2.75in 0.85in 1.5in;
+    max-width: none;
+  }
+
+  .magazine-cover-title.display-hero {
+    font-size: 48pt;
+  }
+
+  .magazine-body,
+  .magazine-prose,
+  .magazine-ol,
+  .magazine-lead {
+    font-size: 11.5pt;
+    line-height: 1.55;
+  }
+
+  .magazine-h2.display-section {
+    font-size: 22pt;
+  }
+
+  .magazine-h3 {
+    font-size: 13pt;
+  }
+
+  .magazine-table {
+    font-size: 9pt;
+  }
+
+  .magazine-callout-body,
+  .magazine-checklist li {
+    font-size: 10.5pt;
+  }
+
+  .magazine-section {
+    margin-bottom: 1.35rem;
+  }
+
+  .magazine-front,
+  .magazine-chapter,
+  .magazine-colophon {
+    padding-top: 0.35rem;
+  }
+
+  .magazine-chapter-opener {
+    margin-bottom: 1.75rem;
+  }
+}

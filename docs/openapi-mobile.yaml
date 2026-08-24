@@ -1,0 +1,437 @@
+openapi: 3.0.3
+info:
+  title: Mission Winning Mobile API
+  version: 0.1.0
+  description: |
+    Contract for Android (Compose) and future iOS clients.
+    Coach seed/adapt wraps packages/mw-core — do not reimplement planEngine on device.
+servers:
+  - url: https://www.missionwinning.com
+  - url: http://localhost:3000
+paths:
+  /api/mobile/coach/plan:
+    get:
+      summary: Seed or demo coach week
+      parameters:
+        - name: equipment
+          in: query
+          schema:
+            type: string
+            enum: [bodyweight, dumbbells, full-gym]
+        - name: adaptDemo
+          in: query
+          schema:
+            type: string
+            enum: ['0', '1', 'true', 'false']
+      responses:
+        '200':
+          description: Plan + adapt beats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachPlanResponse'
+        '401':
+          description: Private mode without access
+        '429':
+          description: Rate limited
+    post:
+      summary: Generate seed coach week
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoachPlanRequest'
+      responses:
+        '200':
+          description: Plan + adapt beats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachPlanResponse'
+  /api/mobile/coach/adapt:
+    post:
+      summary: Mark session done and bump plan revision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoachAdaptRequest'
+      responses:
+        '200':
+          description: Updated plan + adapt beats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachPlanResponse'
+  /api/mobile/workouts:
+    post:
+      summary: Log workout (cloud sync if Bearer present)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutLogRequest'
+      responses:
+        '200':
+          description: Ack (synced true/false)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutLogResponse'
+  /api/mobile/premium/status:
+    get:
+      summary: Super Bundle entitlement for native Account
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Premium flag + source
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PremiumStatus'
+        '429':
+          description: Rate limited
+  /api/mobile/premium/play-purchase:
+    post:
+      summary: Verify Google Play purchase and grant Super Bundle enrollment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productId, purchaseToken]
+              properties:
+                productId:
+                  type: string
+                  example: super_bundle_monthly
+                purchaseToken:
+                  type: string
+                packageName:
+                  type: string
+                  example: com.missionwinning.app
+                orderId:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: premium granted
+        '401':
+          description: Unauthorized
+        '402':
+          description: Purchase not valid
+        '503':
+          description: Play verify not configured
+        '429':
+          description: Rate limited
+  /api/mobile/sync/routines:
+    post:
+      summary: Batch push saved routines (≤50)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [routines]
+              properties:
+                routines:
+                  type: array
+                  maxItems: 50
+      responses:
+        '200':
+          description: Per-item acks
+        '401':
+          description: Unauthorized
+    get:
+      summary: Cursor pull routines (includes tombstones)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: items + nextCursor
+
+  /api/mobile/sync/customs:
+    post:
+      summary: Batch push custom exercises (≤50)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Per-item acks
+    get:
+      summary: Cursor pull custom exercises
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: items + nextCursor
+  /api/mobile/sync/prefs:
+    post:
+      summary: Push minimal mobile prefs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ok
+    get:
+      summary: Pull mobile prefs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: prefs or null
+  /api/mobile/telemetry:
+    post:
+      summary: Anonymous Android weekly heartbeat (install id + week only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [installId, weekKey]
+              properties:
+                installId:
+                  type: string
+                  format: uuid
+                weekKey:
+                  type: string
+                  example: 2026-W30
+                appVersion:
+                  type: string
+      responses:
+        '200':
+          description: Accepted
+        '429':
+          description: Rate limited
+  /api/mobile/sync/workouts:
+    post:
+      summary: Batch push full-fidelity workouts (≤50)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workouts]
+              properties:
+                workouts:
+                  type: array
+                  maxItems: 50
+                  items:
+                    $ref: '#/components/schemas/SyncWorkout'
+      responses:
+        '200':
+          description: Per-item acks
+        '401':
+          description: Missing/invalid Bearer
+        '429':
+          description: Rate limited
+    get:
+      summary: Cursor pull workouts (includes tombstones)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+            description: ISO updated_at cursor (exclusive)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+      responses:
+        '200':
+          description: items + nextCursor
+        '401':
+          description: Missing/invalid Bearer
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CoachPlanRequest:
+      type: object
+      properties:
+        equipment:
+          type: string
+          enum: [bodyweight, dumbbells, full-gym]
+        withAdaptDemo:
+          type: boolean
+        revision:
+          type: integer
+    CoachAdaptRequest:
+      type: object
+      required: [plan, sessionId]
+      properties:
+        plan:
+          $ref: '#/components/schemas/CoachPlan'
+        sessionId:
+          type: string
+    CoachPlanResponse:
+      type: object
+      required: [plan, adaptBeats, hasAdaptSignal]
+      properties:
+        plan:
+          $ref: '#/components/schemas/CoachPlan'
+        adaptBeats:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              defaultMessage:
+                type: string
+              count:
+                type: integer
+        hasAdaptSignal:
+          type: boolean
+    CoachPlan:
+      type: object
+      required:
+        [revision, weekStart, daysPerWeek, sessions, generatedAt, contextHash, equipmentProfile]
+      properties:
+        revision:
+          type: integer
+        weekStart:
+          type: string
+        daysPerWeek:
+          type: integer
+        generatedAt:
+          type: string
+        contextHash:
+          type: string
+        equipmentProfile:
+          type: string
+          enum: [bodyweight, dumbbells, full-gym]
+        sessions:
+          type: array
+          items:
+            type: object
+    WorkoutLogRequest:
+      type: object
+      required: [workoutName, durationSeconds, setCount, totalVolume]
+      properties:
+        workoutName:
+          type: string
+        durationSeconds:
+          type: integer
+        setCount:
+          type: integer
+        totalVolume:
+          type: number
+        sessionId:
+          type: string
+        completedAt:
+          type: string
+    WorkoutLogResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        synced:
+          type: boolean
+        id:
+          type: string
+        workoutName:
+          type: string
+        completedAt:
+          type: string
+        syncError:
+          type: string
+    PremiumStatus:
+      type: object
+      required: [premium, source]
+      properties:
+        premium:
+          type: boolean
+        source:
+          type: string
+          description: demo | enrollment | free | anonymous | unconfigured | rate_limited | error
+    SyncSet:
+      type: object
+      required: [id, exerciseId, setIndex, reps, weight, completedAt]
+      properties:
+        id:
+          type: string
+        exerciseId:
+          type: string
+        exerciseName:
+          type: string
+        setIndex:
+          type: integer
+        reps:
+          type: integer
+        weight:
+          type: number
+        completedAt:
+          type: string
+        weightUnit:
+          type: string
+        rpe:
+          type: integer
+          nullable: true
+        setKind:
+          type: string
+    SyncWorkout:
+      type: object
+      required: [clientId, workoutName, completedAt, durationSeconds, setCount, totalVolume]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        workoutName:
+          type: string
+        completedAt:
+          type: string
+        durationSeconds:
+          type: integer
+        setCount:
+          type: integer
+        totalVolume:
+          type: number
+        revision:
+          type: integer
+        sets:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncSet'
+        deletedAt:
+          type: string
+          nullable: true

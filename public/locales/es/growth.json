@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "Invita a un amigo",
+  "growthReferralDesc": "Comparte tu código. Cuando alguien empieza el camino gratis con él, crece la misión. Solo reconocimiento — sin recompensas de pago por ahora.",
+  "growthReferralInvite": "Invitar a un amigo",
+  "growthReferralCode": "Tu código",
+  "growthReferralCount": "{{count}} reclutados",
+  "growthReferralSignIn": "Iniciar sesión",
+  "growthReferralSignInHint": "Inicia sesión para obtener tu código e invitar a la misión.",
+  "growthRecognition3": "Reclutador",
+  "growthRecognition10": "Reclutador de campo",
+  "growthRecognition25": "Reclutador de misión",
+  "growthShareCopied": "Enlace copiado",
+  "growthShareFailed": "No se pudo compartir"
+}

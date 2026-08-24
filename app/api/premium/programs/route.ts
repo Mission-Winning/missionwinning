@@ -1,0 +1,53 @@
+/**
+ * Premium pro program templates payload.
+ * Auth: premium | See: app/api/INDEX.md
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { withApiLogging } from '@/lib/api/withApiLogging';
+import { createClient } from '@supabase/supabase-js';
+import { extractSupabaseAccessToken } from '@/lib/supabaseAuthCookies';
+import { isPremiumBypassEnabled, isPremiumForUser } from '@/lib/premiumServer';
+import { getPremiumProgramTemplates } from '@/data/premiumProgramTemplates';
+import type { ProgramCategory } from '@/data/programTemplates';
+
+const CATALOG_CACHE = { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' };
+
+/** Pro program templates — gated server-side (not in client bundle). */
+export const GET = withApiLogging('premium/programs', async(request: NextRequest) => {
+  const category = (request.nextUrl.searchParams.get('category') ?? 'pro') as ProgramCategory;
+
+  if (category !== 'pro') {
+    return NextResponse.json({ error: 'Use client templates for non-pro categories' }, { status: 400 });
+  }
+
+  if (isPremiumBypassEnabled()) {
+    return NextResponse.json({ programs: getPremiumProgramTemplates() }, { headers: CATALOG_CACHE });
+  }
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) {
+    return NextResponse.json({ error: 'Premium programs unavailable' }, { status: 503 });
+  }
+
+  const accessToken = extractSupabaseAccessToken(request.cookies);
+  if (!accessToken) {
+    return NextResponse.json({ error: 'Premium required' }, { status: 403 });
+  }
+
+  const supabase = createClient(url, anon);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(accessToken);
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const premium = await isPremiumForUser(user.id, user.email ?? null);
+  if (!premium) {
+    return NextResponse.json({ error: 'Premium enrollment required' }, { status: 403 });
+  }
+
+  return NextResponse.json({ programs: getPremiumProgramTemplates() }, { headers: CATALOG_CACHE });
+});

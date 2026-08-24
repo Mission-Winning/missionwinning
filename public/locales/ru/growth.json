@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "Пригласить друга",
+  "growthReferralDesc": "Поделитесь кодом. Когда кто-то начнёт бесплатный путь с ним, миссия растёт. Только признание — без платных наград пока.",
+  "growthReferralInvite": "Пригласить друга",
+  "growthReferralCode": "Ваш код",
+  "growthReferralCount": "{{count}} приглашено",
+  "growthReferralSignIn": "Войти",
+  "growthReferralSignInHint": "Войдите, чтобы получить код приглашения.",
+  "growthRecognition3": "Рекрутер",
+  "growthRecognition10": "Полевой рекрутер",
+  "growthRecognition25": "Рекрутер миссии",
+  "growthShareCopied": "Ссылка скопирована",
+  "growthShareFailed": "Не удалось поделиться"
+}

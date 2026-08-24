@@ -1,0 +1,109 @@
+# Media coverage report
+
+Generated: 2026-08-14 (`.774` — unique Form Index stills 43; library cards no longer use pattern rasters)
+
+## Summary
+
+| Metric | Count |
+|--------|------:|
+| Exercises (catalog) | 229 |
+| Structured text guides | 94 |
+| Form SVGs on disk | 59 |
+| · of which pattern packs | 7 |
+| FORM_MEDIA_IDS wired | 52 |
+| Guides without SVG | 42 |
+| Orphan SVGs (not media, not pattern) | 0 |
+| FORM_MEDIA missing file | 0 |
+| Guidebook chapter heroes | 6 |
+| Guidebook section figures | 18 |
+
+## Guides without form SVG (T1 backlog)
+
+- `burpee-pullup`
+- `cable-crossover`
+- `cossack-squat`
+- `double-under`
+- `dumbbell-fly`
+- `dumbbell-press`
+- `face-pull-band`
+- `farmers-walk-dbs`
+- `good-morning-bw`
+- `hammer-curl`
+- `high-knees`
+- `hollow-hold`
+- `incline-bench`
+- `jumping-jack`
+- `kettlebell-swing-2h`
+- `landmine-antirotation-press`
+- `landmine-hack-squat`
+- `landmine-meadows-row`
+- `landmine-press`
+- `landmine-rdl`
+- `landmine-reverse-lunge`
+- `landmine-rotation`
+- `landmine-row`
+- `landmine-single-arm-press`
+- `landmine-squat`
+- `landmine-thruster`
+- `leg-curl`
+- `leg-extension`
+- `lunge-with-reach`
+- `preacher-curl`
+- `rear-delt-fly`
+- `reverse-lunge`
+- `ring-row`
+- `scap-pullup`
+- `seated-calf`
+- `skater-hop`
+- `suitcase-carry`
+- `triceps-extension`
+- `tuck-jump`
+- `v-up`
+- `wall-ball`
+- `worlds-greatest-stretch`
+
+## Wiring issues
+
+- No missing files for FORM_MEDIA_IDS.
+- No orphan SVGs (patterns are intentional shared art).
+
+**Pattern packs (7):** `pattern-core`, `pattern-hinge`, `pattern-isolation`, `pattern-loco`, `pattern-pull`, `pattern-push`, `pattern-squat`
+
+## Guidebook figures
+
+Heroes:
+- /learn/human-performance-hero.webp
+- /learn/movement-mechanics-hero.webp
+- /learn/programming-tuning-hero.webp
+- /learn/getting-started-mw-hero.webp
+- /learn/nutrition-recovery-hero.webp
+- /learn/assessments-progress-hero.webp
+
+Section figures:
+- /learn/said-principle.webp
+- /learn/energy-systems.webp
+- /learn/recovery-stimulus.webp
+- /form-guides/air-squat.svg
+- /form-guides/romanian-deadlift.svg
+- /form-guides/push-ups.svg
+- /learn/progressive-overload.webp
+- /form-guides/squats.svg
+- /learn/deload-signal.webp
+- /learn/first-session.webp
+- /learn/six-pillars.webp
+- /learn/win-score-offline.webp
+- /learn/protein-briefing.webp
+- /form-guides/plank.svg
+- /learn/meal-timing.webp
+- /learn/parq-screen.webp
+- /learn/retest-cadence.webp
+- /learn/adjust-plan.webp
+
+## Next craft tiers
+
+1. **T1** — SVGs for guides without media (list above).
+2. **T2** — next coach/library frequency lifts.
+3. **T3** — pattern packs for long-tail cues-only exercises.
+4. **Learn** — unique section diagrams beyond form-guide reuse.
+
+_Playbook: [docs/MEDIA_SYSTEM.md](../docs/MEDIA_SYSTEM.md)_

@@ -1,0 +1,14 @@
+{
+  "growthReferralTitle": "友達を招待",
+  "growthReferralDesc": "コードを共有。誰かがそれで無料パスを始めるとミッションが広がります。認識のみ — 有料リワードはまだありません。",
+  "growthReferralInvite": "友達を招待",
+  "growthReferralCode": "あなたのコード",
+  "growthReferralCount": "{{count}}人を招待",
+  "growthReferralSignIn": "サインイン",
+  "growthReferralSignInHint": "サインインすると招待コードを取得して共有できます。",
+  "growthRecognition3": "リクルーター",
+  "growthRecognition10": "フィールド・リクルーター",
+  "growthRecognition25": "ミッション・リクルーター",
+  "growthShareCopied": "リンクをコピーしました",
+  "growthShareFailed": "共有できませんでした"
+}

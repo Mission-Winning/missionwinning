@@ -1,0 +1,61 @@
+'use client';
+
+/**
+ * Language switcher for public Beyond the Basics reader — all APP_LANGS.
+ */
+
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
+import { track } from '@/lib/analytics';
+import {
+  APP_LANGS,
+  APP_LANG_NATIVE_NAMES,
+  normalizeAppLang,
+  type AppLang,
+} from '@/i18n/appLangs';
+import { STORAGE_KEYS } from '@/lib/storage/keys';
+import { writeRaw } from '@/lib/storage/safeStorage';
+
+/** @deprecated Use APP_LANGS — kept for callers expecting GuidebookLocale. */
+export const GUIDEBOOK_LOCALES = APP_LANGS;
+export type GuidebookLocale = AppLang;
+
+type Props = {
+  className?: string;
+  /** Compact label above select */
+  showLabel?: boolean;
+};
+
+export function GuideLocaleSelect({ className, showLabel = true }: Props) {
+  const { t } = useTranslation();
+  const current = normalizeAppLang(i18n.language);
+
+  const onChange = (lng: string) => {
+    writeRaw(STORAGE_KEYS.langExplicit, '1');
+    void i18n.changeLanguage(lng);
+    track('guide_locale_changed', { locale: lng });
+  };
+
+  return (
+    <div className={className}>
+      {showLabel && (
+        <label htmlFor="guide-locale" className="eyebrow mb-2 block">
+          {t('guideLanguage', { defaultValue: 'Language' })}
+        </label>
+      )}
+      <select
+        id="guide-locale"
+        value={current}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full  border-2 border-border bg-background px-3 py-2 text-sm text-foreground"
+        aria-label={t('guideLanguage', { defaultValue: 'Language' })}
+      >
+        {APP_LANGS.map((code) => (
+          <option key={code} value={code}>
+            {APP_LANG_NATIVE_NAMES[code]}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}

@@ -1,0 +1,186 @@
+# One-shot: apply a SQL migration against production Supabase.
+#
+# Connection source, in order:
+#   1. secrets.SUPABASE_DB_URL  — the direct (non-pooling) Postgres URL. Preferred.
+#   2. `vercel env pull`        — legacy path, works ONLY for non-Sensitive vars.
+#
+# Why 1 exists. This workflow originally assumed "Sensitive secrets decrypt in CI".
+# They do not. Vercel Sensitive env vars are **write-only**: `vercel env pull` returns
+# a short redaction placeholder for them everywhere, CI included. Both runs of this
+# workflow before that was understood (2026-07-20, 2026-07-29) died the same way —
+# `pg` was handed an 11-character placeholder as a connection string and asked DNS to
+# resolve a host called `base`, the tail of "supabase". A migration path that has
+# never once succeeded, failing with a DNS error that names no cause, is worse than
+# no migration path at all: it reads as working.
+#
+# So the placeholder is now detected and named before anything connects.
+#
+# Required secrets: SUPABASE_DB_URL (preferred) — or VERCEL_TOKEN + VERCEL_ORG_ID +
+# VERCEL_PROJECT_ID for the legacy path, which only works if POSTGRES_URL_NON_POOLING
+# is NOT marked Sensitive in Vercel.
+name: Apply Supabase migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_file:
+        description: 'Path under supabase/migrations'
+        required: true
+        default: 'supabase/migrations/20260721_beta_invites.sql'
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Founder: create GH Environment "production" with required reviewers when repo is Public.
+    # Holds DB URL power — never run from untrusted automation.
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI + pg
+        run: |
+          npm install -g vercel@latest
+          npm install pg
+
+      # `secrets` is not a valid context in a step-level `if:`. Referencing it there
+      # does not evaluate false — it makes the whole file unparseable, so GitHub
+      # emits a failed run on every push and shows the path instead of the name.
+      # Same trap aikido.yml documents; same fix — gate on an env-fed output.
+      - name: Check SUPABASE_DB_URL
+        id: gate
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "has_db_url=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_db_url=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Pull production env (legacy path — skipped when SUPABASE_DB_URL is set)
+        if: steps.gate.outputs.has_db_url == 'false'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ] || [ -z "$VERCEL_ORG_ID" ]; then
+            echo "Missing VERCEL_TOKEN / VERCEL_PROJECT_ID / VERCEL_ORG_ID"
+            echo "Set secrets.SUPABASE_DB_URL instead — see this workflow's header."
+            exit 1
+          fi
+          mkdir -p .vercel
+          printf '%s\n' "{\"projectId\":\"$VERCEL_PROJECT_ID\",\"orgId\":\"$VERCEL_ORG_ID\",\"projectName\":\"missionwinning\"}" > .vercel/project.json
+          vercel env pull .env.production --environment=production --yes --token "$VERCEL_TOKEN"
+          # Sanity: lengths only
+          node -e "
+            const fs=require('fs');
+            const t=fs.readFileSync('.env.production','utf8');
+            for (const k of ['SUPABASE_SERVICE_ROLE_KEY','SUPABASE_URL','POSTGRES_URL','POSTGRES_URL_NON_POOLING','POSTGRES_PASSWORD','POSTGRES_HOST']) {
+              const m=t.match(new RegExp('^'+k+'=(.*)$','m'));
+              const v=(m?m[1]:'').replace(/^[\"']|[\"']$/g,'');
+              console.log(k+': len='+v.length);
+            }
+          "
+
+      - name: Apply migration SQL
+        env:
+          MIGRATION_FILE: ${{ inputs.migration_file }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { Client } = require('pg');
+          const path = process.env.MIGRATION_FILE;
+          if (!fs.existsSync(path)) {
+            console.error('Missing migration file:', path);
+            process.exit(1);
+          }
+          // Only the legacy Vercel step writes this file, and it is skipped whenever
+          // SUPABASE_DB_URL is set — i.e. on the preferred path. Reading it
+          // unconditionally turned that path into an ENOENT before the connection
+          // string was ever chosen. Absent is a valid state: it means no legacy vars.
+          const envText = fs.existsSync('.env.production')
+            ? fs.readFileSync('.env.production', 'utf8')
+            : '';
+          const env = {};
+          for (const line of envText.split('\n')) {
+            if (!line || line.startsWith('#') || !line.includes('=')) continue;
+            const i = line.indexOf('=');
+            const k = line.slice(0, i);
+            let v = line.slice(i + 1).trim();
+            if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+              v = v.slice(1, -1);
+            }
+            env[k] = v;
+          }
+          const sql = fs.readFileSync(path, 'utf8');
+
+          // A value Vercel refused to hand back is not a connection string. Sensitive
+          // vars come out as a short placeholder with no scheme; passing one to `pg`
+          // produces a DNS error naming a fragment of the real hostname, which sends
+          // whoever reads it looking for a network fault that does not exist.
+          const usable = (v) =>
+            typeof v === 'string' && v.length > 20 && /^postgres(ql)?:\/\//.test(v);
+
+          // Prefer the GitHub secret; fall back to a Vercel value only if it survived.
+          const connectionString =
+            (usable(process.env.SUPABASE_DB_URL) && process.env.SUPABASE_DB_URL) ||
+            [env.POSTGRES_URL_NON_POOLING, env.POSTGRES_URL, env.DATABASE_URL].find(usable) ||
+            null;
+
+          if (!connectionString) {
+            const seen = ['POSTGRES_URL_NON_POOLING', 'POSTGRES_URL', 'DATABASE_URL']
+              .map((k) => `${k}: ${env[k] ? `len=${env[k].length}, no usable URL` : 'absent'}`)
+              .join('\n  ');
+            console.error(
+              'No usable Postgres connection string.\n\n' +
+              '  SUPABASE_DB_URL secret: ' +
+              (process.env.SUPABASE_DB_URL ? 'set but not a postgres:// URL' : 'not set') +
+              '\n  ' + seen + '\n\n' +
+              'Vercel Sensitive env vars are write-only — `vercel env pull` returns a\n' +
+              'redaction placeholder for them, in CI too. Set the SUPABASE_DB_URL repo\n' +
+              'secret to the direct (non-pooling) connection string.'
+            );
+            process.exit(1);
+          }
+          async function run() {
+            let client;
+            {
+              console.log('Connecting via', process.env.SUPABASE_DB_URL ? 'SUPABASE_DB_URL' : 'Vercel POSTGRES_URL*');
+              client = new Client({
+                connectionString,
+                ssl: { rejectUnauthorized: false },
+              });
+            }
+            await client.connect();
+            try {
+              console.log('Applying', path, '(' + sql.length + ' bytes)');
+              await client.query(sql);
+              // Verify
+              const check = await client.query(`
+                select
+                  to_regclass('public.beta_invites') as beta_invites,
+                  to_regclass('public.checkout_recovery') as checkout_recovery,
+                  exists(
+                    select 1 from information_schema.columns
+                    where table_schema='public' and table_name='profiles' and column_name='invited_via'
+                  ) as invited_via
+              `);
+              console.log('Verify:', check.rows[0]);
+              console.log('OK');
+            } finally {
+              await client.end();
+            }
+          }
+          run().catch((e) => {
+            console.error(e);
+            process.exit(1);
+          });
+          NODE

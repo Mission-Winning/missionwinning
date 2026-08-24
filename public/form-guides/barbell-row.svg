@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none" role="img" aria-label="Row: hinge, pull, lower">
+  <style>
+    /* Hero form motion — only when the athlete allows motion. */
+    @media (prefers-reduced-motion: no-preference) {
+      .form-phase-mid {
+        animation: form-mid-bob 2s ease-in-out infinite;
+        transform-box: fill-box;
+        transform-origin: center bottom;
+      }
+      .form-cue-pulse {
+        animation: form-cue-pulse 2s ease-in-out infinite;
+      }
+    }
+    @keyframes form-mid-bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+    @keyframes form-cue-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+  <title>Barbell row form diagram</title>
+  <rect width="360" height="220" fill="#f3f2f2"></rect>
+  <text x="60" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">HINGE</text>
+  <text x="180" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">PULL</text>
+  <text x="300" y="28" text-anchor="middle" fill="#6f6b69" font-family="Archivo, system-ui, sans-serif" font-size="11" letter-spacing="0.5">LOWER</text>
+  <line x1="20" y1="185" x2="100" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="140" y1="185" x2="220" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <line x1="260" y1="185" x2="340" y2="185" stroke="#201e1d" stroke-width="2"></line>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="92.2" cy="77.2" r="9"></circle>
+    <line x1="92.2" y1="77.2" x2="86.2" y2="91.2"></line>
+    <line x1="86.2" y1="91.2" x2="60" y2="128"></line>
+    <line x1="86.2" y1="91.2" x2="84.2" y2="95.2"></line>
+    <line x1="84.2" y1="95.2" x2="94.2" y2="113.2"></line>
+    <line x1="94.2" y1="113.2" x2="64" y2="162"></line>
+    <line x1="84.2" y1="95.2" x2="98.2" y2="117.2"></line>
+    <line x1="98.2" y1="117.2" x2="74" y2="162"></line>
+    <line x1="60" y1="128" x2="50" y2="155"></line>
+    <line x1="50" y1="155" x2="42" y2="185"></line>
+    <line x1="60" y1="128" x2="72" y2="155"></line>
+    <line x1="72" y1="155" x2="80" y2="185"></line>
+  </g>
+  <line x1="50" y1="162" x2="90" y2="162" stroke="#201e1d" stroke-width="3" stroke-linecap="round"></line>
+  <g class="form-phase-mid" stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="209.4" cy="76.4" r="9"></circle>
+    <line x1="209.4" y1="76.4" x2="203.4" y2="90.4"></line>
+    <line x1="203.4" y1="90.4" x2="180" y2="128"></line>
+    <line x1="203.4" y1="90.4" x2="201.4" y2="94.4"></line>
+    <line x1="201.4" y1="94.4" x2="188" y2="115"></line>
+    <line x1="188" y1="115" x2="198" y2="128"></line>
+    <line x1="201.4" y1="94.4" x2="194" y2="118"></line>
+    <line x1="194" y1="118" x2="206" y2="130"></line>
+    <line x1="180" y1="128" x2="170" y2="155"></line>
+    <line x1="170" y1="155" x2="162" y2="185"></line>
+    <line x1="180" y1="128" x2="192" y2="155"></line>
+    <line x1="192" y1="155" x2="200" y2="185"></line>
+  </g>
+  <line x1="188" y1="128" x2="220" y2="128" stroke="#201e1d" stroke-width="3" stroke-linecap="round"></line>
+  <path class="form-cue-pulse" d="M225 155 L225 130" stroke="#ec3013" stroke-width="2" stroke-linecap="round"></path>
+  <polygon class="form-cue-pulse" points="225,130 229,138 221,138" fill="#ec3013"></polygon>
+  <text x="235" y="142.5" fill="#ec3013" font-family="Archivo, system-ui, sans-serif" font-size="9">row</text>
+  <g stroke="#201e1d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="332.2" cy="77.2" r="9"></circle>
+    <line x1="332.2" y1="77.2" x2="326.2" y2="91.2"></line>
+    <line x1="326.2" y1="91.2" x2="300" y2="128"></line>
+    <line x1="326.2" y1="91.2" x2="324.2" y2="95.2"></line>
+    <line x1="324.2" y1="95.2" x2="334.2" y2="113.2"></line>
+    <line x1="334.2" y1="113.2" x2="304" y2="162"></line>
+    <line x1="324.2" y1="95.2" x2="338.2" y2="117.2"></line>
+    <line x1="338.2" y1="117.2" x2="314" y2="162"></line>
+    <line x1="300" y1="128" x2="290" y2="155"></line>
+    <line x1="290" y1="155" x2="282" y2="185"></line>
+    <line x1="300" y1="128" x2="312" y2="155"></line>
+    <line x1="312" y1="155" x2="320" y2="185"></line>
+  </g>
+  <line x1="290" y1="162" x2="330" y2="162" stroke="#201e1d" stroke-width="3" stroke-linecap="round"></line>
+</svg>
